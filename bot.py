@@ -7,7 +7,7 @@ from admin import Admin
 import hackathon
 import system
 
-API_TOKEN = "1279034718:AAF8PJyO9YWcW06ug-Gs8QIHKJyHd8iIfDc"
+API_TOKEN = ""
 
 bot = TeleBot(API_TOKEN)
 data = Data(bot=bot)
@@ -100,6 +100,7 @@ def time_request(message):
 @bot.message_handler(func=lambda message: message.text == data.DESTROY_PASSWORD, content_types=['text'])
 def destroy_all_data(message):
     data.destroy_all()
+    bot.send_message(message.chat.id, text="Всі дані знищені")
     #data.add_hackathon(name="Hackathon 2020")
     #hack.update_hackathon()
 

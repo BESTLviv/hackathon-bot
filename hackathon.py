@@ -92,15 +92,15 @@ class Hackathon:
         self.bot.send_photo(chat_id, caption=text, photo=photo, reply_markup=self.get_keyboard(chat_id), parse_mode="HTML")
         
         # Send registration form is user is not registered yet
-        if self.hackathon["status"] < self.STATUS_HACK_STARTED and is_user_registered is False:
-            register_text = "Нажимай на кнопку та заповнюй форму!"
-            registration_url = self.hackathon["registration_form"]
-
-            markup = InlineKeyboardMarkup()
-            btn = InlineKeyboardButton(text="Натискай на мене!", url=registration_url)
-            markup.add(btn)
-
-            self.bot.send_message(chat_id, text=register_text, reply_markup=markup)
+        #if self.hackathon["status"] < self.STATUS_HACK_STARTED and is_user_registered is False:
+        #    register_text = "Нажимай на кнопку та заповнюй форму!"
+        #    registration_url = self.hackathon["registration_form"]
+        #
+        #    markup = InlineKeyboardMarkup()
+        #    btn = InlineKeyboardButton(text="Натискай на мене!", url=registration_url)
+        #    markup.add(btn)
+        #
+        #    self.bot.send_message(chat_id, text=register_text, reply_markup=markup)
 
     def send_schedule_info(self, chat_id):
         photo = self.hackathon["schedule_photo"]
@@ -110,14 +110,27 @@ class Hackathon:
     def send_task_info(self, chat_id):
         team = self.get_user_team(chat_id)
         team_task = team["task_photo"]
+        team_task_text = team["task_text"]
 
-        self.bot.send_photo(chat_id, photo=team_task)
+        self.bot.send_photo(chat_id, photo=team_task, caption=team_task_text, parse_mode="HTML")
 
     def send_partner_task_info(self, chat_id):
         team = self.get_user_team(chat_id)
         team_partner_task = team["partner_task_photo"]
+        team_partner_task_text = team["partner_task_text"]
+        team_partner_task_link = team["partner_task_link"]
 
-        self.bot.send_photo(chat_id, photo=team_partner_task)
+        link_text = "Натисни на мене"
+        markup = InlineKeyboardMarkup()
+        btn = InlineKeyboardButton(text=link_text, url=team_partner_task_link)
+        markup.add(btn)
+
+        try:
+            self.bot.send_photo(chat_id, photo=team_partner_task, caption=team_partner_task_text, 
+                                reply_markup=markup, parse_mode="HTML")
+        except:
+            self.bot.send_photo(chat_id, photo=team_partner_task, caption=team_partner_task_text, 
+                                parse_mode="HTML")
 
     def send_need_help_info(self, chat_id):
         text_wait = "Зачекайте, зараз з вами зв'яжуться адміністратори!"
@@ -140,8 +153,9 @@ class Hackathon:
         time_left = str(hack_end_time - datetime.now()).split(".")[0]
 
         text = f"Залишилось часу - <b>{time_left}</b>"
+        photo = self.hackathon["time_photo"]
 
-        self.bot.send_message(chat_id, text=text, parse_mode="HTML")
+        self.bot.send_photo(chat_id, caption=text, photo=photo, parse_mode="HTML")
 
 
     def add_new_team(self):
@@ -258,25 +272,28 @@ class Hackathon:
         self.bot.send_message(self.data.ADMIN_CHAT_ID, text="Опис успішно змінено!")
         
 
-    def change_photo(self, main=False, schedule=False):
+    def change_photo(self, main=False, schedule=False, time=False):
         text_to_admin = "Надішли мені фото!"
         self.bot.send_message(chat_id=self.data.ADMIN_CHAT_ID, text=text_to_admin)
 
         self.bot.register_next_step_handler_by_chat_id(self.data.ADMIN_CHAT_ID, self.process_change_photo,
-                                                       main=main, schedule=schedule)
+                                                       main=main, schedule=schedule, time=time)
 
     def process_change_photo(self, message, **kwargs):
         main = kwargs["main"]
         schedule = kwargs["schedule"]
+        time = kwargs["time"]
 
         if message.content_type == "photo":
             photo = message.photo[-1].file_id
             if main:
                 self.data.update_hackathon(set_={"photo":photo})
             if schedule:
-                self.data.update_hackathon(set_={"schedule":photo})
+                self.data.update_hackathon(set_={"schedule_photo":photo})
+            if time:
+                self.data.update_hackathon(set_={"time_photo":photo})
         else:
-            self.change_photo(main, schedule)
+            self.change_photo(main, schedule, time)
             return
         
 
@@ -284,13 +301,18 @@ class Hackathon:
             obj = "Головне фото"
         if schedule:
             obj = "Розклад"
+        if time:
+            obj = "Фото часу"
 
         self.update_hackathon()
         self.bot.send_message(self.data.ADMIN_CHAT_ID, text=f"{obj} успішно змінено!")
      
     
     def change_task(self, team_name, main=False, partner=False):
-        text_to_admin = "Надішли мені фото!"
+        if main:
+            text_to_admin = "Надішли мені фото з описом!"
+        if partner:
+            text_to_admin = "Надішли мені фото з описом!\nВ останньому рядку опису вкажіть ПОСИЛАННЯ"
         self.bot.send_message(chat_id=self.data.ADMIN_CHAT_ID, text=text_to_admin)
 
         self.bot.register_next_step_handler_by_chat_id(self.data.ADMIN_CHAT_ID, self.process_change_task,
@@ -303,10 +325,14 @@ class Hackathon:
 
         if message.content_type == "photo":
             photo = message.photo[-1].file_id
+            description = message.caption
             if main:
-                self.data.update_team(set_={"task_photo":photo}, where={"name":team_name})
+                self.data.update_team(set_={"task_photo":photo, "task_text":description}, where={"name":team_name})
             if partner:
-                self.data.update_team(set_={"partner_task_photo":photo}, where={"name":team_name})
+                link = description.split('\n')[-1].strip()
+                description = description[:description.rfind('\n')]
+                self.data.update_team(set_={"partner_task_photo":photo, "partner_task_text":description,
+                                            "partner_task_link":link}, where={"name":team_name})
         else:
             self.change_photo(team_name, main, partner)
             return

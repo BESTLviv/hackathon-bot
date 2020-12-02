@@ -46,6 +46,9 @@ class Admin:
         elif action == "SendMessageToTeam":
             self.send_admin_message_to_team(team_name)
 
+        elif action == "SendTeamTasks":
+            self.send_team_tasks(call, team_name)
+
         elif action == "ChangeHackPhoto":
             self.hackathon.change_photo(main=True)
 
@@ -60,6 +63,9 @@ class Admin:
 
         elif action == "ChangeTeamPartnerTask":
             self.hackathon.change_task(team_name, partner=True)
+
+        elif action == "ChangeTimeLeftPhoto":
+            self.hackathon.change_photo(time=True)
 
         else:
             pass
@@ -93,7 +99,7 @@ class Admin:
 
 
         # Send message to all Button
-        send_msg_to_all_btn_text = "Зробити розсилку всім корисутвачам"
+        send_msg_to_all_btn_text = "Зробити розсилку всім користувачам"
         send_msg_to_all_btn_callback = self.form_admin_callback(action="SendMessageToAll")
         send_msg_to_all_btn = InlineKeyboardButton(send_msg_to_all_btn_text, callback_data=send_msg_to_all_btn_callback)
         admin_markup.add(send_msg_to_all_btn)
@@ -121,6 +127,12 @@ class Admin:
         change_btn_callback = self.form_admin_callback(action="ChangeHackDescription")
         description_change_btn = InlineKeyboardButton(change_btn_text, callback_data=change_btn_callback)
         admin_markup.add(photo_change_btn, schedule_photo_change_btn, description_change_btn)
+
+        # Change hack time photo
+        change_btn_text = "Змінити фото для часу"
+        change_btn_callback = self.form_admin_callback(action="ChangeTimeLeftPhoto")
+        time_left_photo_change_btn = InlineKeyboardButton(change_btn_text, callback_data=change_btn_callback)
+        admin_markup.add(time_left_photo_change_btn)
 
         if call is None:
             self.bot.send_message(chat_id=self.data.ADMIN_CHAT_ID,
@@ -153,7 +165,6 @@ class Admin:
     def send_team_detail(self, call, team_name):
         markup = InlineKeyboardMarkup()
 
-
         # Send Message
         btn_text = "Надіслати повідомлення команді"
         btn_callback = self.form_admin_callback(action="SendMessageToTeam", team_name=team_name)
@@ -169,6 +180,12 @@ class Admin:
         change_partner_task_btn_callback = self.form_admin_callback("ChangeTeamPartnerTask", team_name=team_name)
         change_partner_task_btn = InlineKeyboardButton(change_partner_task_btn_text, callback_data=change_partner_task_btn_callback)
         markup.add(change_task_btn, change_partner_task_btn)
+
+        # Show Tasks
+        btn_text = "Показати поточні завдання"
+        btn_callback = self.form_admin_callback(action="SendTeamTasks", team_name=team_name)
+        btn = InlineKeyboardButton(btn_text, callback_data=btn_callback)
+        markup.add(btn)
 
         # Back Button
         btn_text = "----------Назад----------"
@@ -186,6 +203,37 @@ class Admin:
 
 
         self.bot.send_message(chat_id=self.data.ADMIN_CHAT_ID, text=text, reply_markup=markup, parse_mode="HTML")
+
+    def send_team_tasks(self, call, team_name):
+        team = self.data.get_team(where={"name":team_name}).next()
+
+        # Normal task
+        task_photo = team["task_photo"]
+        task_text = team["task_text"]
+        self.bot.send_photo(chat_id=self.data.ADMIN_CHAT_ID, photo=task_photo, caption=task_text)
+
+        # Partner task
+        partner_task_photo = team["partner_task_photo"]
+        partner_task_text = team["partner_task_text"]
+        partner_task_link = team["partner_task_link"]
+
+        markup = None
+        if partner_task_link:
+            markup = InlineKeyboardMarkup()
+            link_text = "Натисни на мене"
+            btn = InlineKeyboardButton(text=link_text, url=partner_task_link)
+            markup.add(btn)
+
+        try:
+            self.bot.send_photo(chat_id=self.data.ADMIN_CHAT_ID, photo=partner_task_photo, caption=partner_task_text, 
+                                reply_markup=markup, parse_mode="HTML")
+        except:
+            self.bot.send_photo(chat_id=self.data.ADMIN_CHAT_ID, photo=partner_task_photo, 
+                                caption=partner_task_text, parse_mode="HTML")
+
+        # Send previous menu
+        self.send_team_detail(call, team_name)
+    
 
 
     def send_admin_message_to_team(self, team_name):

@@ -5,7 +5,7 @@ import hackathon
 
 class Data:
 
-    DESTROY_PASSWORD = "Кіт, ти маму мав?????"
+    DESTROY_PASSWORD = "Кіт, ти маму мав????? -_-"
 
     def __init__(self, bot):
         self.ADMIN_CHAT_ID = -423275728
@@ -13,7 +13,7 @@ class Data:
 
         self.bot = bot
 
-        client = MongoClient("mongodb+srv://HYaroslav:4486@hackathon.9fqie.mongodb.net/test?retryWrites=true&w=majority")
+        client = MongoClient("")
         db = client.test
         
         self.user_collection = db.user
@@ -53,14 +53,19 @@ class Data:
 
         return team
 
-    def add_team(self, name, task_photo=None, partner_task_photo=None, register_date=datetime.now()):
+    def add_team(self, name, task_photo=None, task_text=None,
+                 partner_task_photo=None, partner_task_text=None,
+                 partner_task_link=None,
+                 register_date=datetime.now()):
         
         if task_photo is None:
             task_photo = self.TEST_PHOTO
             partner_task_photo = self.TEST_PHOTO
 
-        _id = self.team_collection.insert_one({"name":name, "task_photo":task_photo,
-                                               "partner_task_photo":partner_task_photo,
+        _id = self.team_collection.insert_one({"name":name, "task_photo":task_photo, "task_text":task_text,
+                                               "partner_task_photo":partner_task_photo, 
+                                               "partner_task_text":partner_task_text,
+                                               "partner_task_link":partner_task_link,
                                                "register_date":register_date})
 
         return _id.inserted_id
@@ -76,7 +81,7 @@ class Data:
 
         return hackathon
 
-    def add_hackathon(self, name, photo=None, schedule_photo=None, 
+    def add_hackathon(self, name, photo=None, schedule_photo=None, time_photo=None,
                       description=None, planned_date=None, start_time=None, end_time=None, 
                       registration_form = "sinoptik.ua",
                       status=0):
@@ -85,9 +90,11 @@ class Data:
         if photo is None:
             photo = self.TEST_PHOTO
             schedule_photo = self.TEST_PHOTO
+            time_photo = self.TEST_PHOTO
         
         _id = self.hackathon_collection.insert_one({"name":name, "photo":photo,
                                                     "schedule_photo":schedule_photo,
+                                                    "time_photo":time_photo,
                                                     "description":description,
                                                     "planned_date":planned_date,
                                                     "start_time":start_time, "end_time":end_time,

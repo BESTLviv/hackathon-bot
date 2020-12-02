@@ -1,7 +1,6 @@
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardRemove
 from datetime import datetime
 
-
 def add_user(data, message):
     username = message.chat.username if message.chat.username is not None else "Безіменний"
     name = message.chat.first_name if message.chat.first_name is not None else "Безіменний"
