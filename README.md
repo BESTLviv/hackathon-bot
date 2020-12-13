@@ -26,9 +26,10 @@ Main functionality:
 
 
 <h2>Install</h2>
-<ol>
-	<li>pip install pyTelegramBotAPI</li>
-	<li>pip install pymongo</li>
-	<li>pip install dnspython</li>
-</ol>
+<ul>
+    <li>pip install -r requirements.txt</li>
+    <li>run setup.py with params : '-token' and '-db'</li>
+</ul>
+    
+    
 
