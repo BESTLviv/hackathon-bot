@@ -1,7 +1,11 @@
+import configparser
 from pymongo import MongoClient
 from datetime import datetime
 import hackathon
 #dnspython
+
+config = configparser.ConfigParser()
+config.read('Settings.ini')
 
 class Data:
 
@@ -13,13 +17,13 @@ class Data:
 
         self.bot = bot
 
-        client = MongoClient("")
+        client = MongoClient(config['Mongo']['db'])
         db = client.test
         
         self.user_collection = db.user
         self.team_collection = db.team
         self.hackathon_collection = db.hackathon
-        #self.partner_ad_collection = db.partner_ad
+        #self.partner_ad_collection = db.partner_addata.py
 
     def get_user(self, where=dict()):
         try:

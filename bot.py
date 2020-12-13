@@ -1,13 +1,13 @@
+import configparser
 from telebot import TeleBot
-
-
 from data import Data
-
 from admin import Admin
 import hackathon
 import system
 
-API_TOKEN = ""
+config = configparser.ConfigParser()
+config.read('Settings.ini')
+API_TOKEN = config['TG']['token']
 
 bot = TeleBot(API_TOKEN)
 data = Data(bot=bot)
