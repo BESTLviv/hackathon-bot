@@ -12,6 +12,7 @@ Main functionality:
     <li>Partners's tasks</li>
     <li>Call an admin for help</li>
     <li>Check time left</li>
+    <li>Partners menu</li>
   </ul>
   <li>Admin panel (in telegram hackathon group)</li>
   <ul>
@@ -21,6 +22,7 @@ Main functionality:
     <li>View team list and details</li>
     <li>Change content of event</li>
     <li>Register new team</li>
+    <li>Add new partner</li>
   </ul>
 </ol>
 
