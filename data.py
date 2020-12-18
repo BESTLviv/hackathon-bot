@@ -35,8 +35,11 @@ class Data:
 
     def add_user(self, name, surname, username, chat_id,
                  click_count=1, 
-                 last_interaction_time=datetime.now(),
-                 team_id=None, register_date=datetime.now()):
+                 last_interaction_time=None,
+                 team_id=None, register_date=None):
+        
+        last_interaction_time=datetime.now()
+        register_date=datetime.now()
         
         _id = self.user_collection.insert_one({"name":name, "surname":surname, 
                                                  "username":username, "chat_id":chat_id,
@@ -60,7 +63,9 @@ class Data:
     def add_team(self, name, task_photo=None, task_text=None,
                  partner_task_photo=None, partner_task_text=None,
                  partner_task_link=None,
-                 register_date=datetime.now()):
+                 register_date=None):
+        
+        register_date=datetime.now()
         
         if task_photo is None:
             task_photo = self.TEST_PHOTO
