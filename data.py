@@ -12,7 +12,7 @@ class Data:
     DESTROY_PASSWORD = "Кіт, ти маму мав????? -_-"
 
     def __init__(self, bot):
-        self.ADMIN_CHAT_ID = -423275728
+        self.ADMIN_CHAT_ID = -1001460192627
         self.TEST_PHOTO = "AgACAgIAAxkBAAMKX5VSJIaxHuz0-1ltpFW0JBj_ISkAAhmwMRtZJahIV_2nbh0WwcWSxg6YLgADAQADAgADbQADCDkCAAEbBA"
 
         self.bot = bot
