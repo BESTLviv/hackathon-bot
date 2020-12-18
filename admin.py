@@ -175,7 +175,7 @@ class Admin:
 
         if call is None:
             self.bot.send_message(chat_id=self.data.ADMIN_CHAT_ID,
-                                  text="КУКУ адмін", reply_markup=admin_markup)
+                                  text="КУКУ адмін", reply_markup=admin_markup, parse_mode="HTML")
         else:
             message_id = call.message.message_id
             self.bot.edit_message_text(chat_id=self.data.ADMIN_CHAT_ID, message_id=message_id, text="КУКУ адмін", reply_markup=admin_markup)
@@ -255,7 +255,7 @@ class Admin:
         # Normal task
         task_photo = team["task_photo"]
         task_text = team["task_text"]
-        self.bot.send_photo(chat_id=self.data.ADMIN_CHAT_ID, photo=task_photo, caption=task_text)
+        self.bot.send_photo(chat_id=self.data.ADMIN_CHAT_ID, photo=task_photo, caption=task_text, parse_mode="HTML")
 
         # Partner task
         #partner_task_photo = team["partner_task_photo"]
@@ -290,7 +290,7 @@ class Admin:
 
     def send_admin_message_to_all(self):
         text_to_admin = "Надішли мені повідомлення і я надішлю його всім користувачам бота!"
-        self.bot.send_message(chat_id=self.data.ADMIN_CHAT_ID, text=text_to_admin)
+        self.bot.send_message(chat_id=self.data.ADMIN_CHAT_ID, text=text_to_admin, parse_mode="HTML")
 
         self.bot.register_next_step_handler_by_chat_id(self.data.ADMIN_CHAT_ID, self.process_send_message,
                                                        destination="ALL")
@@ -325,9 +325,9 @@ class Admin:
             user_chat_id = user["chat_id"]
             try:
                 if photo is None:
-                    self.bot.send_message(chat_id=user_chat_id, text=text)
+                    self.bot.send_message(chat_id=user_chat_id, text=text, parse_mode="HTML")
                 else:
-                    self.bot.send_photo(chat_id=user_chat_id, caption=text, photo=photo)
+                    self.bot.send_photo(chat_id=user_chat_id, caption=text, photo=photo, parse_mode="HTML")
             except:
                 continue
 
