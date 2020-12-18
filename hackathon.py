@@ -544,9 +544,10 @@ class Hackathon:
         hack_menu.add(self.COMMAND_HACKATHON, self.COMMAND_SCHEDULE)
 
         if self.is_running() and self.is_user_registered(chat_id):
-            hack_menu.add(self.COMMAND_QUEST, self.COMMAND_NEED_HELP)
-            hack_menu.add(self.COMMAND_TIME, self.COMMAND_MENTORS)
-            hack_menu.add(self.COMMAND_PARTNERS)
+            hack_menu.add(self.COMMAND_QUEST)
+            hack_menu.add(self.COMMAND_TIME, self.COMMAND_NEED_HELP)
+        
+        hack_menu.add(self.COMMAND_PARTNERS, self.COMMAND_MENTORS)
 
         return hack_menu
 
