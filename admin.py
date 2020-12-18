@@ -15,7 +15,7 @@ class Admin:
         self.bot.clear_step_handler_by_chat_id(chat_id=chat_id)
 
         # null stop/start hack counters
-        if action != "StartHack" and action != "StopHack":
+        if (action != "StartHack" and action != "StopHack") and action != "DeleteTeam":
             self.hackathon.null_counters()
 
 
@@ -61,11 +61,26 @@ class Admin:
         elif action == "ChangeTeamTask":
             self.hackathon.change_task(team_name, main=True)
 
-        elif action == "ChangeTeamPartnerTask":
-            self.hackathon.change_task(team_name, partner=True)
+        #elif action == "ChangeTeamPartnerTask":
+        #    self.hackathon.change_task(team_name, partner=True)
 
         elif action == "ChangeTimeLeftPhoto":
             self.hackathon.change_photo(time=True)
+
+        elif action == "ChangeMentorsSection":
+            self.hackathon.change_mentors_section()
+
+        elif action == "ChangeNeedHelpPhoto":
+            self.hackathon.change_photo(need_help=True)
+
+        elif action == "ChangePartnersMenuInfo":
+            self.hackathon.change_partners_menu_section()
+
+        elif action == "AddPartner":
+            self.hackathon.add_new_partner()
+
+        elif action == "DeleteTeam":
+            self.hackathon.delete_team(call, team_name)
 
         else:
             pass
@@ -134,6 +149,30 @@ class Admin:
         time_left_photo_change_btn = InlineKeyboardButton(change_btn_text, callback_data=change_btn_callback)
         admin_markup.add(time_left_photo_change_btn)
 
+        # Change mentors
+        change_btn_text = "Змінити секцію менторства"
+        change_btn_callback = self.form_admin_callback(action="ChangeMentorsSection")
+        mentor_section_change_btn = InlineKeyboardButton(change_btn_text, callback_data=change_btn_callback)
+        admin_markup.add(mentor_section_change_btn)
+
+        # Change need_help and partners
+        change_btn_text = "Змінити фото в запиті допомоги"
+        change_btn_callback = self.form_admin_callback(action="ChangeNeedHelpPhoto")
+        need_help_photo_change_btn = InlineKeyboardButton(change_btn_text, callback_data=change_btn_callback)
+
+        change_btn_text = "Змінити інфо в партнерах"
+        change_btn_callback = self.form_admin_callback(action="ChangePartnersMenuInfo")
+        partners_menu_info_change_btn = InlineKeyboardButton(change_btn_text, callback_data=change_btn_callback)
+
+        admin_markup.add(need_help_photo_change_btn, partners_menu_info_change_btn)
+
+        # Add partner
+        add_partner_btn_text = "Добавити партнера"
+        add_partner_btn_callback = self.form_admin_callback(action="AddPartner")
+        add_partner_btn = InlineKeyboardButton(add_partner_btn_text, callback_data=add_partner_btn_callback)
+        admin_markup.add(add_partner_btn)
+        
+
         if call is None:
             self.bot.send_message(chat_id=self.data.ADMIN_CHAT_ID,
                                   text="КУКУ адмін", reply_markup=admin_markup)
@@ -176,16 +215,22 @@ class Admin:
         change_task_btn_callback = self.form_admin_callback("ChangeTeamTask", team_name=team_name)
         change_task_btn = InlineKeyboardButton(change_task_btn_text, callback_data=change_task_btn_callback)
         
-        change_partner_task_btn_text = "Змінити таск партнерів"
-        change_partner_task_btn_callback = self.form_admin_callback("ChangeTeamPartnerTask", team_name=team_name)
-        change_partner_task_btn = InlineKeyboardButton(change_partner_task_btn_text, callback_data=change_partner_task_btn_callback)
-        markup.add(change_task_btn, change_partner_task_btn)
+        #change_partner_task_btn_text = "Змінити таск партнерів"
+        #change_partner_task_btn_callback = self.form_admin_callback("ChangeTeamPartnerTask", team_name=team_name)
+        #change_partner_task_btn = InlineKeyboardButton(change_partner_task_btn_text, callback_data=change_partner_task_btn_callback)
+        markup.add(change_task_btn)
 
         # Show Tasks
         btn_text = "Показати поточні завдання"
         btn_callback = self.form_admin_callback(action="SendTeamTasks", team_name=team_name)
         btn = InlineKeyboardButton(btn_text, callback_data=btn_callback)
         markup.add(btn)
+
+        # Delete Team
+        #btn_text = "Видалити команду"
+        #btn_callback = self.form_admin_callback(action="DeleteTeam", team_name=team_name)
+        #btn = InlineKeyboardButton(btn_text, callback_data=btn_callback)
+        #markup.add(btn)
 
         # Back Button
         btn_text = "----------Назад----------"
@@ -213,23 +258,23 @@ class Admin:
         self.bot.send_photo(chat_id=self.data.ADMIN_CHAT_ID, photo=task_photo, caption=task_text)
 
         # Partner task
-        partner_task_photo = team["partner_task_photo"]
-        partner_task_text = team["partner_task_text"]
-        partner_task_link = team["partner_task_link"]
-
-        markup = None
-        if partner_task_link:
-            markup = InlineKeyboardMarkup()
-            link_text = "Натисни на мене"
-            btn = InlineKeyboardButton(text=link_text, url=partner_task_link)
-            markup.add(btn)
-
-        try:
-            self.bot.send_photo(chat_id=self.data.ADMIN_CHAT_ID, photo=partner_task_photo, caption=partner_task_text, 
-                                reply_markup=markup, parse_mode="HTML")
-        except:
-            self.bot.send_photo(chat_id=self.data.ADMIN_CHAT_ID, photo=partner_task_photo, 
-                                caption=partner_task_text, parse_mode="HTML")
+        #partner_task_photo = team["partner_task_photo"]
+        #partner_task_text = team["partner_task_text"]
+        #partner_task_link = team["partner_task_link"]
+        #
+        #markup = None
+        #if partner_task_link:
+        #    markup = InlineKeyboardMarkup()
+        #    link_text = "Натисни на мене"
+        #    btn = InlineKeyboardButton(text=link_text, url=partner_task_link)
+        #    markup.add(btn)
+        #
+        #try:
+        #    self.bot.send_photo(chat_id=self.data.ADMIN_CHAT_ID, photo=partner_task_photo, caption=partner_task_text, 
+        #                        reply_markup=markup, parse_mode="HTML")
+        #except:
+        #    self.bot.send_photo(chat_id=self.data.ADMIN_CHAT_ID, photo=partner_task_photo, 
+        #                        caption=partner_task_text, parse_mode="HTML")
 
         # Send previous menu
         self.send_team_detail(call, team_name)

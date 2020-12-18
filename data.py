@@ -23,7 +23,7 @@ class Data:
         self.user_collection = db.user
         self.team_collection = db.team
         self.hackathon_collection = db.hackathon
-        #self.partner_ad_collection = db.partner_addata.py
+        self.partner_collection = db.partner
 
     def get_user(self, where=dict()):
         try:
@@ -77,6 +77,9 @@ class Data:
     def update_team(self, set_:dict(), where:dict()):
         self.team_collection.update_one(where, {"$set":set_})
 
+    def delete_team(self, where:dict()):
+        self.team_collection.delete_one(where)
+
     def get_hackathon(self, where=dict()):
         try:
             hackathon = self.hackathon_collection.find(where)
@@ -86,6 +89,8 @@ class Data:
         return hackathon
 
     def add_hackathon(self, name, photo=None, schedule_photo=None, time_photo=None,
+                      mentors_text=None, mentors_photo=None, need_help_photo=None,
+                      partners_text=None, partners_photo=None,
                       description=None, planned_date=None, start_time=None, end_time=None, 
                       registration_form = "sinoptik.ua",
                       status=0):
@@ -95,10 +100,18 @@ class Data:
             photo = self.TEST_PHOTO
             schedule_photo = self.TEST_PHOTO
             time_photo = self.TEST_PHOTO
+            partners_photo = self.TEST_PHOTO
+            mentors_photo = self.TEST_PHOTO
+            need_help_photo = self.TEST_PHOTO
         
         _id = self.hackathon_collection.insert_one({"name":name, "photo":photo,
                                                     "schedule_photo":schedule_photo,
                                                     "time_photo":time_photo,
+                                                    "mentors_text":mentors_text,
+                                                    "mentors_photo":mentors_photo,
+                                                    "need_help_photo":need_help_photo,
+                                                    "partners_text":partners_text,
+                                                    "partners_photo":partners_photo,
                                                     "description":description,
                                                     "planned_date":planned_date,
                                                     "start_time":start_time, "end_time":end_time,
@@ -110,25 +123,28 @@ class Data:
     def update_hackathon(self, set_:dict()):
         self.hackathon_collection.update_one({}, {"$set":set_})
     
-    def get_partner_ad(self, where=dict()):
+    def get_partner(self, where=dict()):
         try:
-            partner_ad = self.partner_ad_collection.find(where)
+            partner = self.partner_collection.find(where)
         except:
-            partner_ad = None
+            partner = None
 
-        return partner_ad
+        return partner
 
-    def add_partner_ad(self, name, register_date=datetime.now()):
+    def add_partner(self, name, photo, description, clicks_count=0):
         
-        _id = self.partner_ad_collection.insert_one({"name":name, "register_date":register_date})
+        _id = self.partner_collection.insert_one({"name":name, "photo":photo,
+                                                  "description":description,
+                                                  "clicks_count":clicks_count})
 
         return _id
 
-    def update_partner_ad(self, set_:dict(), where:dict()):
-        self.partner_ad_collection.update_one(where, {"$set":set_})
+    def update_partner(self, set_:dict(), where:dict()):
+        self.partner_collection.update_one(where, {"$set":set_})
     
     def destroy_all(self):
         self.user_collection.remove()
         self.team_collection.remove()
+        self.partner_collection.remove()
         
         self.hackathon_collection.remove()

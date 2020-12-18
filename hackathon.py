@@ -11,10 +11,14 @@ class Hackathon:
     STATUS_HACK_STARTED = 3
     STATUS_HACK_ENDED = 4
 
-    # Tap 5 time on button to start/end event
+    # Tap 6 time on button to start/end event/delete team
     START_COUNTER = 0
     END_COUNTER = 0
-    CLICKS_TO_ACTION = 5
+    DELETE_TEAM_COUNTER = 0
+    CLICKS_TO_ACTION = 6
+
+    # Number of partners in one row of Keyboard in Partners menu
+    KEYBOARD_PARTNERS_IN_ROW = 2
     
     def __init__(self, data):
         super().__init__()
@@ -29,9 +33,16 @@ class Hackathon:
         self.COMMAND_HACKATHON = KeyboardButton("Хакатон")
         self.COMMAND_SCHEDULE = KeyboardButton("Розклад")
         self.COMMAND_QUEST = KeyboardButton("Завдання")
-        self.COMMAND_PARTNER_QUEST = KeyboardButton("Завдання від партнера")
+        #self.COMMAND_PARTNER_QUEST = KeyboardButton("Завдання від партнера")
         self.COMMAND_NEED_HELP = KeyboardButton("Потрібна допомога")
         self.COMMAND_TIME = KeyboardButton("Час")
+        self.COMMAND_MENTORS = KeyboardButton("Менторство")
+        self.COMMAND_PARTNERS = KeyboardButton("Партнери")
+        self.COMMAND_BACK = KeyboardButton("🔙Назад")
+
+        self.COMMAND_PARTNERS_LIST = list()
+        self.COMMAND_PARTNERS_KEYBOARD = ReplyKeyboardMarkup(resize_keyboard=True)
+        self.update_partners()
         
 
     def start_event(self, call):
@@ -51,7 +62,10 @@ class Hackathon:
                                          "end_time":datetime.now()+timedelta(days=1)})
         self.update_hackathon()
 
-        hack_start_text = "Хакатон розпочато!!!\nБажаємо всім успіхів!!!"
+        hack_start_text = ("Увага: BEST::HACKath0n починається прямо зараз! Наступні 24 години будуть "
+                           "присвячені розробці вашого проекту. Всю детальну інформацію знайдете в боті." 
+                           "У секції “Завдання” ви побачите підтему, яка була вибрана для кожної команди з допомогою рандомайзера." 
+                           "Бажаємо всім удачі! Hack with us.")
         self.bot.send_message(chat_id=self.data.ADMIN_CHAT_ID, text=hack_start_text)
         self.send_message_to_participants(text=hack_start_text)
 
@@ -71,7 +85,10 @@ class Hackathon:
         self.data.update_hackathon(set_={"status":self.STATUS_HACK_ENDED})
         self.update_hackathon()
 
-        hack_end_text = "Хакатон закінчено!!!"
+        hack_end_text = ("Увага: BEST::HACKath0n завершено! Дякуємо командам "
+                         "за ці 24 години кодингу та крутої атмосфери. Скоро "
+                         "презентації команд, тож готуйтеся. Зустрінемось вже дуже скоро :)"
+        )
         self.bot.send_message(chat_id=self.data.ADMIN_CHAT_ID, text=hack_end_text)
         self.send_message_to_participants(text=hack_end_text)
 
@@ -133,9 +150,10 @@ class Hackathon:
                                 parse_mode="HTML")
 
     def send_need_help_info(self, chat_id):
-        text_wait = "Зачекайте, зараз з вами зв'яжуться адміністратори!"
+        #text_wait = "Зачекайте, зараз з вами зв'яжуться адміністратори!"
+        photo_wait = self.hackathon["need_help_photo"]
 
-        self.bot.send_message(chat_id, text=text_wait)
+        self.bot.send_photo(chat_id, photo=photo_wait)
 
         # send help request info to admins
         who = self.data.get_user(where={"chat_id":chat_id}).next()
@@ -148,7 +166,6 @@ class Hackathon:
         self.bot.send_message(chat_id=self.data.ADMIN_CHAT_ID, text=text_to_admins, parse_mode="HTML")
 
     def send_time_info(self, chat_id):
-        
         hack_end_time = self.hackathon["end_time"]
         time_left = str(hack_end_time - datetime.now()).split(".")[0]
 
@@ -156,6 +173,44 @@ class Hackathon:
         photo = self.hackathon["time_photo"]
 
         self.bot.send_photo(chat_id, caption=text, photo=photo, parse_mode="HTML")
+
+    def send_mentors_info(self, chat_id):
+        mentors_text = self.hackathon["mentors_text"]
+        mentors_photo = self.hackathon["mentors_photo"]
+
+        if mentors_photo is None:
+            mentors_photo = self.data.TEST_PHOTO
+
+        self.bot.send_photo(chat_id, caption=mentors_text, photo=mentors_photo, parse_mode="HTML")
+
+    def send_partner_info(self, chat_id, partner_name):
+        """
+        Send info about partner. Also get statistic
+        for clicks on every partner.
+        """
+        # get partner info
+        partner = self.data.get_partner(where={"name":partner_name})[0]
+        partner_photo = partner["photo"]
+        partner_description = partner["description"]
+        partner_clicks_count = partner["clicks_count"]
+
+        # update partner clicks
+        self.data.update_partner(set_={"clicks_count":partner_clicks_count+1}, where={"name":partner_name})
+
+        # send info about partner
+        self.bot.send_photo(chat_id=chat_id, photo=partner_photo)
+        self.bot.send_message(chat_id=chat_id, text=partner_description, 
+                              parse_mode="HTML")
+
+
+    def send_partner_menu(self, chat_id):
+        partner_menu = self.get_partners_keyboard()
+
+        partners_photo = self.hackathon["partners_photo"]
+        partners_text = self.hackathon["partners_text"]
+
+        self.bot.send_photo(chat_id=chat_id, photo=partners_photo, caption=partners_text,
+                            reply_markup=partner_menu, parse_mode="HTML")
 
 
     def add_new_team(self):
@@ -229,6 +284,65 @@ class Hackathon:
         self.update_hackathon()
         self.bot.send_message(chat_id=self.data.ADMIN_CHAT_ID, text=f"Вітаємо!\nКоманда <b>{team_name}</b> зареєстрована у Хакатоні!", parse_mode="HTML")
 
+    def delete_team(self, call, team_name):
+        self.DELETE_TEAM_COUNTER += 1
+        if self.DELETE_TEAM_COUNTER != self.CLICKS_TO_ACTION:
+            clicks_left = self.CLICKS_TO_ACTION - self.DELETE_TEAM_COUNTER
+            self.bot.answer_callback_query(call.id, text=f"Натискань залишилось - {clicks_left}")
+            return
+
+        # delete team_id in every team member
+        team= self.data.get_team(where={"name":team_name}).next()
+        team_members_usernames_list = self.get_team_member_usernames_list(team=team)
+        for username in team_members_usernames_list:
+            self.data.update_user(set_={"team_id":None}, where={"username":username})
+        # delete team
+        self.data.delete_team(where={"name":team_name})
+
+        self.bot.delete_message(chat_id=self.data.ADMIN_CHAT_ID, message_id=call.message.message_id)
+        self.bot.send_message(chat_id=self.data.ADMIN_CHAT_ID, text=f"Команду {team_name} видалено!\n/start")
+
+    def add_new_partner(self):
+        text_to_admin = "Надішли мені фото партнера"
+
+        self.bot.send_message(chat_id=self.data.ADMIN_CHAT_ID, text=text_to_admin, parse_mode="HTML")
+        self.bot.register_next_step_handler_by_chat_id(self.data.ADMIN_CHAT_ID, self.process_add_new_partner,
+                                                       step=1, photo=None, description=None)
+
+    def process_add_new_partner(self, message, **kwargs):
+        step = kwargs["step"]
+        photo = kwargs["photo"]
+        description = kwargs["description"]
+
+        # step with photo
+        if step == 1:
+            if message.content_type == "photo":
+                photo = message.photo[-1].file_id
+                step = 2
+
+                text_to_admin = "Надішли мені опис партнера!\nВ першому рядку опису повинна бути <b>назва</b> партнера"
+                self.bot.send_message(chat_id=self.data.ADMIN_CHAT_ID, text=text_to_admin, parse_mode="HTML")
+                self.bot.register_next_step_handler_by_chat_id(self.data.ADMIN_CHAT_ID, self.process_add_new_partner,
+                                                               step=step, photo=photo, description=description)
+                return
+            else:
+                self.add_new_partner()
+                return
+        
+        # step with text
+        if step == 2:
+            if message.content_type == "text":
+                text = message.text
+                name = text.split("\n")[0].strip()
+                description = text[text.rfind('\n'):]
+            else:
+                self.add_new_partner()
+                return
+        
+
+        self.data.add_partner(name, photo, text)
+        self.update_partners()
+        self.bot.send_message(self.data.ADMIN_CHAT_ID, text=f"Партнера {name} добавлено!\n/start")
 
     def send_admin_message_to_participants(self):
         text_to_admin = "Надішли мені повідомлення і я надішлю його всім учасникам!"
@@ -272,17 +386,57 @@ class Hackathon:
         self.bot.send_message(self.data.ADMIN_CHAT_ID, text="Опис успішно змінено!")
         
 
-    def change_photo(self, main=False, schedule=False, time=False):
+    def change_mentors_section(self):
+        text_to_admin = "Надішли мені фото + текст"
+        self.bot.send_message(chat_id=self.data.ADMIN_CHAT_ID, text=text_to_admin)
+
+        self.bot.register_next_step_handler_by_chat_id(self.data.ADMIN_CHAT_ID, self.process_change_mentors_section)
+
+    def process_change_mentors_section(self, message):
+        if message.content_type == "photo":
+            photo = message.photo[-1].file_id
+            text = message.caption
+            self.data.update_hackathon(set_={"mentors_text":text, "mentors_photo":photo})
+        else:
+            self.change_mentors_section()
+            return
+        
+        self.update_hackathon()
+        self.bot.send_message(self.data.ADMIN_CHAT_ID, text="Секцію менторства успішно змінено!\n/start")
+        self.send_mentors_info(chat_id=self.data.ADMIN_CHAT_ID)
+
+
+    def change_partners_menu_section(self):
+        text_to_admin = "Надішли мені фото + текст"
+        self.bot.send_message(chat_id=self.data.ADMIN_CHAT_ID, text=text_to_admin)
+
+        self.bot.register_next_step_handler_by_chat_id(self.data.ADMIN_CHAT_ID, self.process_change_partners_menu_section)
+
+    def process_change_partners_menu_section(self, message):
+        if message.content_type == "photo":
+            photo = message.photo[-1].file_id
+            text = message.caption
+            self.data.update_hackathon(set_={"partners_text":text, "partners_photo":photo})
+        else:
+            self.change_partners_menu_section()
+            return
+        
+        self.update_hackathon()
+        self.bot.send_message(self.data.ADMIN_CHAT_ID, text="Секцію меню партнерів успішно змінено!\n/start")
+
+
+    def change_photo(self, main=False, schedule=False, time=False, need_help=False):
         text_to_admin = "Надішли мені фото!"
         self.bot.send_message(chat_id=self.data.ADMIN_CHAT_ID, text=text_to_admin)
 
         self.bot.register_next_step_handler_by_chat_id(self.data.ADMIN_CHAT_ID, self.process_change_photo,
-                                                       main=main, schedule=schedule, time=time)
+                                                       main=main, schedule=schedule, time=time, need_help=need_help)
 
     def process_change_photo(self, message, **kwargs):
         main = kwargs["main"]
         schedule = kwargs["schedule"]
         time = kwargs["time"]
+        need_help = kwargs["need_help"]
 
         if message.content_type == "photo":
             photo = message.photo[-1].file_id
@@ -292,8 +446,10 @@ class Hackathon:
                 self.data.update_hackathon(set_={"schedule_photo":photo})
             if time:
                 self.data.update_hackathon(set_={"time_photo":photo})
+            if need_help:
+                self.data.update_hackathon(set_={"need_help_photo":photo})
         else:
-            self.change_photo(main, schedule, time)
+            self.change_photo(main, schedule, time, need_help)
             return
         
 
@@ -303,6 +459,8 @@ class Hackathon:
             obj = "Розклад"
         if time:
             obj = "Фото часу"
+        if need_help:
+            obj = "Фото запиту на допомогу"
 
         self.update_hackathon()
         self.bot.send_message(self.data.ADMIN_CHAT_ID, text=f"{obj} успішно змінено!")
@@ -380,15 +538,20 @@ class Hackathon:
         else:
             return False
 
+
     def get_keyboard(self, chat_id):
         hack_menu = ReplyKeyboardMarkup(resize_keyboard=True)
         hack_menu.add(self.COMMAND_HACKATHON, self.COMMAND_SCHEDULE)
 
         if self.is_running() and self.is_user_registered(chat_id):
-            hack_menu.add(self.COMMAND_QUEST, self.COMMAND_PARTNER_QUEST)
-            hack_menu.add(self.COMMAND_NEED_HELP, self.COMMAND_TIME)
+            hack_menu.add(self.COMMAND_QUEST, self.COMMAND_NEED_HELP)
+            hack_menu.add(self.COMMAND_TIME, self.COMMAND_MENTORS)
+            hack_menu.add(self.COMMAND_PARTNERS)
 
         return hack_menu
+
+    def get_partners_keyboard(self):
+        return self.COMMAND_PARTNERS_KEYBOARD
 
     def get_user_team(self, chat_id):
         user = self.data.get_user(where={"chat_id":chat_id}).next()
@@ -409,9 +572,42 @@ class Hackathon:
 
         return team_member_usernames
 
+
     def update_hackathon(self):
         self.hackathon = self.data.get_hackathon().next()
+
+    def update_partners(self):
+        """
+        Update partners list and keyboard
+        Call this method after adding new parner into DB.
+        """
+        partners_list = self.data.get_partner()
+        self.COMMAND_PARTNERS_LIST = list()
+        self.COMMAND_PARTNERS_KEYBOARD = ReplyKeyboardMarkup(resize_keyboard=True)
+
+        # form list and keyboard (n*2)
+        keyboard_row = list()
+        for partner in partners_list:
+            partner_name = partner["name"]
+
+            # list part
+            self.COMMAND_PARTNERS_LIST += [partner_name]
+
+            # keyboard part
+            keyboard_row += [KeyboardButton(partner_name)]
+            if len(keyboard_row) == self.KEYBOARD_PARTNERS_IN_ROW:
+                self.COMMAND_PARTNERS_KEYBOARD.add(*keyboard_row)
+                keyboard_row = list()
+        
+        # add the rest partners to keyboard
+        if len(keyboard_row) < self.KEYBOARD_PARTNERS_IN_ROW:
+            self.COMMAND_PARTNERS_KEYBOARD.add(*keyboard_row)
+        # add "Головне меню" button to keyboard
+        self.COMMAND_PARTNERS_KEYBOARD.add(self.COMMAND_BACK)
+
+
 
     def null_counters(self):
         self.START_COUNTER = 0
         self.END_COUNTER = 0
+        self.DELETE_TEAM_COUNTER = 0
