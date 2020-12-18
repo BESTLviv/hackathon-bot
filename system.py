@@ -28,4 +28,5 @@ def update_user_interaction_time(data, message):
         data.update_user(set_={"last_interaction_time":date, "click_count":click_count}, 
                          where={"chat_id":user_chat_id})
     except:
-        add_user(data, message)
+        if user_chat_id != data.ADMIN_CHAT_ID:
+            add_user(data, message)
