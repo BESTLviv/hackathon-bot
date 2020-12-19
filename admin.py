@@ -330,6 +330,8 @@ class Admin:
                     self.bot.send_photo(chat_id=user_chat_id, caption=text, photo=photo, parse_mode="HTML")
             except:
                 continue
+                
+        self.bot.send_message(chat_id=self.data.ADMIN_CHAT_ID, text="Успішно відправлено!")
 
 
     def form_admin_callback(self, action, team_name=None):
