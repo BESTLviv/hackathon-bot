@@ -520,6 +520,8 @@ class Hackathon:
                     self.bot.send_photo(chat_id=user_chat_id, caption=text, photo=photo, reply_markup=markup)
             except:
                 continue
+                
+        self.bot.send_message(chat_id=self.data.ADMIN_CHAT_ID, text="Успішно відправлено!")
 
     
     def is_running(self):
