@@ -515,9 +515,9 @@ class Hackathon:
             try:
                 markup = self.get_keyboard(user_chat_id)
                 if photo is None:
-                    self.bot.send_message(chat_id=user_chat_id, text=text, reply_markup=markup)
+                    self.bot.send_message(chat_id=user_chat_id, text=text, reply_markup=markup, parse_mode="HTML")
                 else:
-                    self.bot.send_photo(chat_id=user_chat_id, caption=text, photo=photo, reply_markup=markup)
+                    self.bot.send_photo(chat_id=user_chat_id, caption=text, photo=photo, reply_markup=markup, parse_mode="HTML")
             except:
                 continue
                 
