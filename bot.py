@@ -45,12 +45,6 @@ def start_bot(message):
 
     try:
         main_menu_section.send_start_menu(user)
-        return
-
-        if user.additional_info is None:
-            send_welcome_message_and_start_quiz(user)
-        else:
-            main_menu_section.send_start_menu(user)
 
     except Exception as e:
         print(f"Exception during start - {e}")
@@ -97,17 +91,6 @@ def handle_callback_query(call):
 
     except Exception as e:
         print(e)
-
-
-def send_welcome_message_and_start_quiz(user: User):
-    hack = data.get_hackathon()
-    welcome_text = hack.content.start_text
-    welcome_photo = hack.content.start_photo
-    bot.send_photo(user.chat_id, photo=welcome_photo, caption=welcome_text)
-
-    final_func = hack_section.send_start_menu
-
-    quiz.start_starting_quiz(user, bot, final_func)
 
 
 if __name__ == "__main__":

@@ -31,7 +31,7 @@ def start_starting_quiz(user: User, bot: TeleBot, final_func: Callable):
     quiz_iterator = iter(start_quiz_questions)
     question = next(quiz_iterator)
 
-    sleep(2)
+    sleep(1)
 
     send_question(
         user,

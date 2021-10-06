@@ -1,6 +1,7 @@
 from telebot import TeleBot
 from telegraph import Telegraph
 import mongoengine as me
+from pymongo.ssl_support import CERT_NONE
 from datetime import datetime, timezone, date
 
 import string
@@ -18,7 +19,7 @@ class Data:
     def __init__(self, conn_string: str, bot: TeleBot):
         self.bot = bot
 
-        me.connect(host=conn_string)
+        me.connect(host=conn_string, ssl_cert_reqs=CERT_NONE)
         print("connection success ")
 
         self.create_system_tables()
@@ -107,6 +108,14 @@ class Data:
             wrong_answer_message="Вибери, будь ласка, один з варіантів 🤡",
         )
 
+        q_tech = Question(
+            name="tech_used",
+            message="Які технології збираєшся використовувати на проекті?",
+            allow_user_input=True,
+            correct_answer_message="Те що треба!",
+            wrong_answer_message="Відповідь треба записувати текстом",
+        )
+
         ##############
         q_city = Question(
             name="city",
@@ -140,29 +149,16 @@ class Data:
             allow_user_input=False,
         )
 
-        q_register_end = Question(
-            name="end_register",
-            message="Хух, усі формальності позаду!\n\nЯ зареєстрував тебе на ІЯК. Далі нас очікують два дні пригод.\n\n<b>Поонлайнимо?</b> 🤓",
-            buttons=[
-                "Прийду подивитися 👀",
-                "Прийду шукати роботу 🤑",
-                "Прийду дізнатися щось нове 🧐",
-                "Візьму участь у воркшопах✍️",
-                "Все разом 🤹",
-            ],
-            allow_user_input=False,
-        )
-
         quiz.questions = [
             q_name_surname,
             q_age,
             q_school,
             q_study_term,
             # q_city,
+            q_tech,
             q_contact,
             q_email,
             q_agree,
-            q_register_end,
         ]
 
         quiz.save()

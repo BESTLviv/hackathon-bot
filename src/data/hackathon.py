@@ -117,9 +117,11 @@ class HackathonMenu(me.Document):
 
 
 class Hackathon(me.Document):
-    cv_archive_file_id_list = me.ListField(default=None)
-    cv_archive_last_update = me.DateTimeField(default=None)
-    cv_archive_size = me.IntField(default=0)
+    # cv_archive_file_id_list = me.ListField(default=None)
+    # cv_archive_last_update = me.DateTimeField(default=None)
+    # cv_archive_size = me.IntField(default=0)
+    start_text = me.StringField(default=None)
+    start_photo = me.StringField(default=None)
 
     current_menu: HackathonMenu = me.ReferenceField(HackathonMenu)
 
@@ -264,4 +266,6 @@ def add_test_data():
     menu_after_project.save()
 
     hackathon = Hackathon(current_menu=menu_informative)
+    hackathon.start_photo = DEFAULT_PHOTO
+    hackathon.start_text = DEFAULT_TEXT
     hackathon.save()

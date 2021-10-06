@@ -30,6 +30,10 @@ class User(me.Document):
     is_blocked = me.BooleanField(default=False)
     blocked_date = me.DateTimeField()
 
+    @property
+    def is_registered(self) -> bool:
+        return self.additional_info != None
+
     def is_participant(self):
         if self.team:
             if self.team.is_active:

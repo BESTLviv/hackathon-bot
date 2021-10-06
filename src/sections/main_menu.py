@@ -9,6 +9,7 @@ from telebot.types import (
 from ..data import User, Data, Hackathon
 from ..data.hackathon import ReplyButton
 from ..sections.section import Section
+from ..staff.quiz import start_starting_quiz
 
 
 class MainMenuSection(Section):
@@ -23,6 +24,10 @@ class MainMenuSection(Section):
 
     def send_start_menu(self, user: User):
 
+        if user.is_registered is False:
+            self._register_user(user)
+            return
+
         self.data.hackathon.current_menu.send_menu(self.bot, user)
 
     def process_button(self, user: User, btn_name: str):
@@ -34,6 +39,15 @@ class MainMenuSection(Section):
 
         else:
             self.special_buttons[button.special_action](user, button)
+
+    def _register_user(self, user: User):
+        self.bot.send_photo(
+            user.chat_id,
+            photo=self.data.hackathon.start_photo,
+            caption=self.data.hackathon.start_text,
+        )
+
+        start_starting_quiz(user=user, bot=self.bot, final_func=self.send_start_menu)
 
     #################
     ## Informative
