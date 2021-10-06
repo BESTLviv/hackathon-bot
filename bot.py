@@ -1,160 +1,116 @@
 import configparser
-from telebot import TeleBot
-from data import Data
-from admin import Admin
-from hackathon import Hackathon
-import system
+import os
+
+from src.data import Data, User
+from src.sections.admin import AdminSection
+
+from src.sections.main_menu import MainMenuSection
+from src.sections.team_menu import TeamMenu
+
+from src.staff.updates import Updater
+
+# from src.staff import utils
+
+# from src.objects import quiz
+
+from telebot import TeleBot, logger
 
 config = configparser.ConfigParser()
-config.read('Settings.ini')
-API_TOKEN = config['TG']['token']
+config.read("Settings.ini")
 
-bot = TeleBot(API_TOKEN)
-data = Data(bot=bot)
+API_TOKEN = (
+    os.environ.get("TOKEN", False)
+    if os.environ.get("TOKEN", False)
+    else config["TG"]["token"]
+)
+CONNECTION_STRING = (
+    os.environ.get("DB", False)
+    if os.environ.get("DB", False)
+    else config["Mongo"]["db"]
+)
 
-hack = Hackathon(data=data)
-admin = Admin(data=data, hackathon=hack)
+bot = TeleBot(API_TOKEN, parse_mode="HTML")
+data = Data(conn_string=CONNECTION_STRING, bot=bot)
+
+main_menu_section = MainMenuSection(data=data)
+team_section = TeamMenu(data=data)
+# admin_section = AdminSection(data=data)
+
+updater = Updater(data=data)
 
 
-@bot.message_handler(commands=['start'])
+@bot.message_handler(commands=["start"])
 def start_bot(message):
-    chat_id = message.chat.id
-
-    # This can be deleted after first start of bot
-    if hack.hackathon is None:
-        data.add_hackathon(name="Hackathon 2020")
-        hack.update_hackathon()
+    user = updater.update_user_interaction_time(message)
 
     try:
-        if chat_id == data.ADMIN_CHAT_ID:
-            admin.send_admin_menu()
+        main_menu_section.send_start_menu(user)
+        return
+
+        if user.additional_info is None:
+            send_welcome_message_and_start_quiz(user)
         else:
-            system.add_user(data, message)
-            hack.send_main_info(chat_id)
-    except:
-        pass
+            main_menu_section.send_start_menu(user)
+
+    except Exception as e:
+        print(f"Exception during start - {e}")
 
 
-@bot.message_handler(func=lambda message: message.text == hack.COMMAND_HACKATHON.text 
-                     or message.text == hack.COMMAND_BACK.text, content_types=['text'])
-def hackathon_info(message):
-    system.update_user_interaction_time(data, message)
-    
-    chat_id = message.chat.id
+@bot.message_handler(content_types=["text"])
+def handle_text_buttons(message):
+    user = updater.update_user_interaction_time(message)
+    message_text = message.text
+
     try:
-        hack.send_main_info(chat_id)
-    except:
-        pass
+
+        import time
+
+        start = time.time()
+
+        if message_text in data.hackathon.current_menu.buttons_list:
+            if (
+                data.hackathon.current_menu.get_btn_by_name(message_text).special_action
+                == "team_info"
+            ):
+                team_section.send_team_info_menu(user)
+            else:
+                main_menu_section.process_button(user, message_text)
+
+        elif message_text == "__next_menu":
+            data.hackathon.switch_to_next_menu()
+            main_menu_section.send_start_menu(user)
+
+        bot.send_message(user.chat_id, f"{time.time() - start}")
+
+    except Exception as e:
+        print(e)
 
 
-@bot.message_handler(func=lambda message: message.text == hack.COMMAND_SCHEDULE.text, content_types=['text'])
-def schedule_info(message):
-    system.update_user_interaction_time(data, message)
-    
-    chat_id = message.chat.id
+@bot.callback_query_handler(func=lambda call: True)
+def handle_callback_query(call):
+    user = updater.update_user_interaction_time(call.message)
+    section = call.data.split(";")[0]
+
     try:
-        hack.send_schedule_info(chat_id)
-    except:
-        pass
+        if section == "Team":
+            team_section.process_callback(user, call)
+
+    except Exception as e:
+        print(e)
 
 
-@bot.message_handler(func=lambda message: message.text == hack.COMMAND_QUEST.text, content_types=['text'])
-def task_info(message):
-    system.update_user_interaction_time(data, message)
-    
-    chat_id = message.chat.id
-    try:
-        hack.send_task_info(chat_id)
-    except:
-        pass
+def send_welcome_message_and_start_quiz(user: User):
+    hack = data.get_hackathon()
+    welcome_text = hack.content.start_text
+    welcome_photo = hack.content.start_photo
+    bot.send_photo(user.chat_id, photo=welcome_photo, caption=welcome_text)
 
-#@bot.message_handler(func=lambda message: message.text == hack.COMMAND_PARTNER_QUEST.text, content_types=['text'])
-#def partner_task_info(message):
-#    system.update_user_interaction_time(data, message)
-#    
-#    chat_id = message.chat.id
-#    try:
-#        hack.send_partner_task_info(chat_id)
-#    except:
-#        pass
+    final_func = hack_section.send_start_menu
 
+    quiz.start_starting_quiz(user, bot, final_func)
 
-@bot.message_handler(func=lambda message: message.text == hack.COMMAND_NEED_HELP.text, content_types=['text'])
-def help_request(message):
-    system.update_user_interaction_time(data, message)
-    
-    chat_id = message.chat.id
-    try:
-        hack.send_need_help_info(chat_id)
-    except:
-        pass
-
-
-@bot.message_handler(func=lambda message: message.text == hack.COMMAND_TIME.text, content_types=['text'])
-def time_request(message):
-    system.update_user_interaction_time(data, message)
-    
-    chat_id = message.chat.id
-    try:
-        hack.send_time_info(chat_id)
-    except:
-        pass
-
-@bot.message_handler(func=lambda message: message.text == hack.COMMAND_MENTORS.text, content_types=['text'])
-def mentors_info_request(message):
-    system.update_user_interaction_time(data, message)
-    
-    chat_id = message.chat.id
-    try:
-        hack.send_mentors_info(chat_id)
-    except:
-        pass
-
-@bot.message_handler(func=lambda message: message.text == hack.COMMAND_PARTNERS.text, content_types=['text'])
-def partners_menu_request(message):
-    system.update_user_interaction_time(data, message)
-    
-    chat_id = message.chat.id
-    try:
-        hack.send_partner_menu(chat_id)
-    except:
-        pass
-
-@bot.message_handler(func=lambda message: message.text in hack.COMMAND_PARTNERS_LIST, content_types=['text'])
-def partner_info_request(message):
-    system.update_user_interaction_time(data, message)
-    
-    chat_id = message.chat.id
-    try:
-        hack.send_partner_info(chat_id, partner_name=message.text)
-    except:
-        pass
-
-
-@bot.message_handler(func=lambda message: message.text == data.DESTROY_PASSWORD, content_types=['text'])
-def destroy_all_data(message):
-    data.destroy_all()
-    bot.send_message(message.chat.id, text="Всі дані знищені")
-    data.add_hackathon(name="Hackathon 2020")
-    hack.update_hackathon()
-
-@bot.callback_query_handler(func=lambda call: "Admin" in call.data.split(";")[0])
-def handle_admin_query(call):
-    
-    try:
-        admin.process_callback(call)
-    except:
-        oops(call)
-
-
-def oops(call):
-    oops_text = "Щось пішло не так :("
-    bot.answer_callback_query(call.id, text=oops_text)
 
 if __name__ == "__main__":
-
-    if hack.hackathon is None:
-        data.add_hackathon(name="Hackathon 2020")
-        hack.update_hackathon()
+    updater.start_update_threads()
 
     bot.polling(none_stop=True)
