@@ -112,7 +112,7 @@ class Sender:
     def send_custom_message(self):
         bot = self.data.bot
 
-        markup = ReplyKeyboardMarkup(resize_keyboard=True)
+        markup = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
         cancel_btn = KeyboardButton(text=self.CANCEL_BUTTON_TEXT)
         markup.add(cancel_btn)
 
@@ -189,7 +189,6 @@ class Sender:
             ),
             chat_id=self.admin.chat_id,
             message_id=progress_message.message_id,
-            reply_markup=ReplyKeyboardRemove(),
         )
 
         self._return_to_prev_admin_menu()
