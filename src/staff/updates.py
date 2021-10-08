@@ -10,7 +10,7 @@ from src.staff import utils
 
 class Updater:
 
-    UPDATE_HOUR = 23  # 8:00 every morning
+    UPDATE_HOUR = 10  # 8:00 every morning
 
     def __init__(self, data: Data):
         super().__init__()
@@ -183,6 +183,7 @@ class Updater:
 
             print(f"[Updater] Time left till update - {hours_left} hours")
 
+            current_hour = 1 if current_hour == 0 else current_hour
             seconds_left = current_hour * 60 * 60
             sleep(seconds_left)
 

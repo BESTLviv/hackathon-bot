@@ -34,7 +34,7 @@ data = Data(conn_string=CONNECTION_STRING, bot=bot)
 
 main_menu_section = MainMenuSection(data=data)
 team_section = TeamMenu(data=data)
-# admin_section = AdminSection(data=data)
+admin_section = AdminSection(data=data)
 
 updater = Updater(data=data)
 
@@ -57,9 +57,8 @@ def handle_text_buttons(message):
 
     try:
 
-        import time
-
-        start = time.time()
+        # import time
+        # start = time.time()
 
         if message_text in data.hackathon.current_menu.buttons_list:
             if (
@@ -74,7 +73,10 @@ def handle_text_buttons(message):
             data.hackathon.switch_to_next_menu()
             main_menu_section.send_start_menu(user)
 
-        bot.send_message(user.chat_id, f"{time.time() - start}")
+        elif message_text == "NakedNestor":
+            admin_section.send_admin_menu(user)
+
+        # bot.send_message(user.chat_id, f"{time.time() - start}")
 
     except Exception as e:
         print(e)
@@ -88,6 +90,9 @@ def handle_callback_query(call):
     try:
         if section == "Team":
             team_section.process_callback(user, call)
+
+        elif section == "Admin":
+            admin_section.process_callback(user, call)
 
     except Exception as e:
         print(e)
