@@ -16,7 +16,7 @@ class Team(me.Document):
 
     def __str__(self) -> str:
         users_list = "\n".join(
-            [f"{user.name} - {user.username}" for user in self.get_members()]
+            [f"{user.name} - @{user.username}" for user in self.get_members()]
         )
         task_flag = f"{test_task} ✅" if self.test_task else "❌"
         is_participate = "✅" if self.is_active else "❌"
