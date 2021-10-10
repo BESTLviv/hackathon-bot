@@ -43,10 +43,11 @@ class TeamMenu(Section):
 
         if user.team is None:
             text = "У тебе ще немає команди!"
-            photo = self.data.TEST_PHOTO
+            photo = "https://i.ibb.co/SxkcpyG/Desktop88-5.png"
+
         else:
-            text = f"Команда {user.team.name}\n{user.team.get_members()}"
-            photo = self.data.TEST_PHOTO  # user.team.photo
+            text = str(user.team)
+            photo = "https://i.ibb.co/SxkcpyG/Desktop88-5.png"  # user.team.photo
 
         markup = self._create_team_info_markup(user)
 
@@ -140,17 +141,12 @@ class TeamMenu(Section):
             callback_data=self.form_team_callback(action="LogoutTeam", edit=True),
         )
 
-        edit_team_btn = InlineKeyboardButton(
-            text="Редагувати команду",
-            callback_data=self.form_team_callback(action="EditTeam", edit=True),
-        )
-
         markup = InlineKeyboardMarkup()
 
         if user.team is None:
             markup.add(register_team_btn, login_team_btn)
         else:
-            markup.add(edit_team_btn, logout_team_btn)
+            markup.add(logout_team_btn)
 
         return markup
 

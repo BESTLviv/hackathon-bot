@@ -7,6 +7,7 @@ from telebot.types import (
     InlineKeyboardMarkup,
     KeyboardButton,
     ReplyKeyboardMarkup,
+    Message,
 )
 
 from .user import User
@@ -84,13 +85,18 @@ class HackathonMenu(me.Document):
 
         return markup
 
-    def send_menu(self, bot: TeleBot, user: User):
+    def update_from_db(self):
+        return HackathonMenu.objects.filter(name=self.name).first()
+
+    def send_menu(self, bot: TeleBot, user: User) -> Message:
 
         if self.menu_photo is None:
-            bot.send_message(user.chat_id, self.menu_text, reply_markup=self.markup)
+            return bot.send_message(
+                user.chat_id, self.menu_text, reply_markup=self.markup
+            )
 
         else:
-            bot.send_photo(
+            return bot.send_photo(
                 user.chat_id,
                 photo=self.menu_photo,
                 caption=self.menu_text,
@@ -173,6 +179,19 @@ class Hackathon(me.Document):
         self.current_menu = self.MENU_LIST[next_index]
         self.save()
         print(f"Menu switched to {self.current_menu.name}")
+
+    def silent_refresh_menu_data(self):
+        updated_menu = self.current_menu.update_from_db()
+
+        current_index = self.MENU_LIST.index(self.current_menu)
+        self.MENU_LIST[current_index] = updated_menu
+
+        self.current_menu = updated_menu
+        self.save()
+
+        # for user in users:
+        #    temp_msg = self.current_menu.send_menu(bot, user)
+        #    bot.delete_message(user.chat_id, temp_msg.message_id)
 
 
 def add_test_data():

@@ -8,10 +8,25 @@ class Team(me.Document):
     password = me.StringField(required=True)
     photo = me.StringField()
     registration_datetime = me.DateTimeField(required=True)
+    test_task = me.StringField(required=False)
     is_active = me.BooleanField(default=False)
 
     def get_members(self):
-        return [user.username for user in User.objects.filter(team=self)]
+        return [user for user in User.objects.filter(team=self)]
+
+    def __str__(self) -> str:
+        users_list = "\n".join(
+            [f"{user.name} - {user.username}" for user in self.get_members()]
+        )
+        task_flag = f"{test_task} ✅" if self.test_task else "❌"
+        is_participate = "✅" if self.is_active else "❌"
+        return (
+            f"Команда <b>{self.name}</b>\n\n"
+            f"<b>Учасники команди:</b>\n"
+            f"{users_list}\n\n"
+            f"<b>Тестове завдання</b> - {task_flag}\n"
+            f"<b>Команда бере участь в хакатоні</b> - {is_participate}"
+        )
 
 
 class User(me.Document):

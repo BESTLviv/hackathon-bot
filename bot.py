@@ -76,6 +76,9 @@ def handle_text_buttons(message):
         elif message_text == "NakedNestor":
             admin_section.send_admin_menu(user)
 
+        elif message_text == "SilentUpdate":
+            updater.update_menu_from_db()
+
         # bot.send_message(user.chat_id, f"{time.time() - start}")
 
     except Exception as e:

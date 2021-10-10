@@ -74,6 +74,12 @@ class Updater:
         )
         update_thread.start()
 
+    def update_menu_from_db(self):
+        print("[Updater] Started silent refresh of DB")
+        # not_blocked_users = User.objects.filter(is_blocked=False)
+        self.data.hackathon.silent_refresh_menu_data()
+        print("[Updater] Finished silent refresh of DB")
+
     def _start_everyday_updates(self):
         try:
             while True:
