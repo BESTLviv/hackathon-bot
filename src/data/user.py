@@ -31,9 +31,9 @@ class Team(me.Document):
 
 class User(me.Document):
     chat_id = me.IntField(required=True, unique=True)
-    name = me.StringField(required=True)
-    surname = me.StringField(required=True)
-    username = me.StringField(required=True)
+    name = me.StringField(default=None)
+    surname = me.StringField(default=None)
+    username = me.StringField(default=None)
     cv_file_id = me.StringField(default=None)
     cv_file_name = me.StringField(default=None)
     additional_info = me.DictField(default=None)
