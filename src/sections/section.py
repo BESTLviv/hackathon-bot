@@ -21,15 +21,13 @@ class Section:
     def form_admin_callback(
         self,
         action,
-        user_id="",
-        company_id="",
-        vacancy_id="",
+        team_name="",
         edit=False,
         delete=False,
         new=False,
     ):
         prev_msg_action = self._get_prev_msg_action(edit, delete, new)
-        return f"Admin;{action};{user_id};{company_id};{vacancy_id};{prev_msg_action}"
+        return f"Admin;{action};{team_name};{prev_msg_action}"
 
     def form_team_callback(self, action, edit=False, delete=False, new=False):
         prev_msg_action = self._get_prev_msg_action(edit, delete, new)

@@ -9,7 +9,24 @@ class Team(me.Document):
     photo = me.StringField()
     registration_datetime = me.DateTimeField(required=True)
     test_task = me.StringField(required=False)
+    test_task_passed = me.BooleanField(default=None)
     is_active = me.BooleanField(default=False)
+
+    @property
+    def test_task_status(self) -> tuple:
+        if self.test_task is None and self.test_task_passed is None:
+            return ("🕑", "не здано")
+
+        if self.test_task and self.test_task_passed is None:
+            return ("📝", f"<a href='{self.test_task}'>на перевірці</a>")
+
+        if self.test_task and self.test_task_passed is False:
+            return ("❌", f"<a href='{self.test_task}'>провалено</a>")
+
+        if self.test_task_passed is True:
+            return ("✅", f"<a href='{self.test_task}'>здано</a>")
+
+        return ("❌", "не здано")
 
     def get_members(self):
         return [user for user in User.objects.filter(team=self)]
@@ -18,13 +35,12 @@ class Team(me.Document):
         users_list = "\n".join(
             [f"{user.name} - @{user.username}" for user in self.get_members()]
         )
-        task_flag = f"{test_task} ✅" if self.test_task else "❌"
         is_participate = "✅" if self.is_active else "❌"
         return (
             f"Команда <b>{self.name}</b>\n\n"
             f"<b>Учасники команди:</b>\n"
             f"{users_list}\n\n"
-            f"<b>Тестове завдання</b> - {task_flag}\n"
+            f"<b>Тестове завдання</b> - {self.test_task_status[0]} ({self.test_task_status[1]})\n"
             f"<b>Команда бере участь в хакатоні</b> - {is_participate}"
         )
 
@@ -43,7 +59,7 @@ class User(me.Document):
     last_update_date = me.DateTimeField(required=True)
     last_interaction_date = me.DateTimeField(required=True)
     is_blocked = me.BooleanField(default=False)
-    blocked_date = me.DateTimeField()
+    blocked_date = me.DateTimeField(default=None)
 
     @property
     def is_registered(self) -> bool:

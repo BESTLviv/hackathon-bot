@@ -24,7 +24,7 @@ class AdminSection(Section):
             self.send_mail_menu(user, call)
 
         elif action in self._mailing_destinations:
-            self.process_mailing(user, call)
+            self._process_mailing(user, call)
 
         self.bot.answer_callback_query(call.id)
 
@@ -46,7 +46,10 @@ class AdminSection(Section):
         else:
             self.bot.send_message(user.chat_id, text, reply_markup=markup)
 
-    def process_mailing(self, user: User, call: CallbackQuery):
+    def send_team_list_menu(self, user: User, call: CallbackQuery = None):
+        pass
+
+    def _process_mailing(self, user: User, call: CallbackQuery):
         destination = call.data.split(";")[1]
 
         sender = Sender(
@@ -83,5 +86,13 @@ class AdminSection(Section):
             callback_data=self.form_admin_callback(action="AdminMenu", edit=True)
         )
         markup.add(back_btn)
+
+        return markup
+
+    def _form_team_list_menu_markup(self) -> InlineKeyboardMarkup:
+        markup = InlineKeyboardMarkup()
+
+        for team in Team.objects:
+            pass
 
         return markup
