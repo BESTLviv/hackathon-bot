@@ -12,6 +12,13 @@ class Team(me.Document):
     test_task_passed = me.BooleanField(default=None)
     is_active = me.BooleanField(default=False)
 
+    members: list
+
+    def __init__(self, *args, **values):
+        super().__init__(*args, **values)
+
+        self.members = [user for user in User.objects.filter(team=self)]
+
     @property
     def test_task_status(self) -> tuple:
         if self.test_task is None and self.test_task_passed is None:
@@ -28,12 +35,16 @@ class Team(me.Document):
 
         return ("❌", "не здано")
 
-    def get_members(self):
-        return [user for user in User.objects.filter(team=self)]
+    @property
+    def full_info(self) -> str:
+        used_techs = "\n".join(
+            [user.additional_info["tech_used"] for user in self.members]
+        )
+        return f"{self}\n\n" f"<b>Технології:</b>\n" f"{used_techs}"
 
     def __str__(self) -> str:
         users_list = "\n".join(
-            [f"{user.name} - @{user.username}" for user in self.get_members()]
+            [f"{user.name} - @{user.username}" for user in self.members]
         )
         is_participate = "✅" if self.is_active else "❌"
         return (

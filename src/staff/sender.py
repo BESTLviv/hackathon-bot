@@ -101,11 +101,13 @@ class Sender:
         data: Data,
         admin: User,
         destination: str,
+        team_name: Team = None,
         prev_admin_menu: "Callable" = None,
     ):
         self.data = data
         self.admin = admin
         self.prev_admin_menu = prev_admin_menu
+        self.team_name = team_name
 
         self.receiver_list: QuerySet = self._get_receiver_list(destination)
 
@@ -208,7 +210,8 @@ class Sender:
             return User.objects.filter(additional_info=None)
 
         elif destination == DestinationEnum.TEAM.value:
-            pass
+            team = Team.objects.filter(name=self.team_name).first()
+            return User.objects.filter(team=team)
 
         elif destination == DestinationEnum.USER.value:
             pass
