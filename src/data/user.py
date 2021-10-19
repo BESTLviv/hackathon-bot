@@ -47,8 +47,10 @@ class Team(me.Document):
             [f"{user.name} - @{user.username}" for user in self.members]
         )
         is_participate = "✅" if self.is_active else "❌"
+
+        team_name = str(self.name).replace("<", "*").replace(">", "*")
         return (
-            f"Команда <b>{self.name}</b>\n\n"
+            f"Команда <b>{team_name}</b>\n\n"
             f"<b>Учасники команди:</b>\n"
             f"{users_list}\n\n"
             f"<b>Тестове завдання</b> - {self.test_task_status[0]} ({self.test_task_status[1]})\n"
