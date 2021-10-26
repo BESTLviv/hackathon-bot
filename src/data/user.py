@@ -14,10 +14,12 @@ class Team(me.Document):
 
     members: list
 
+    @property
+    def members(self):
+        return [user for user in User.objects.filter(team=self)]
+
     def __init__(self, *args, **values):
         super().__init__(*args, **values)
-
-        self.members = [user for user in User.objects.filter(team=self)]
 
     @property
     def test_task_status(self) -> tuple:
