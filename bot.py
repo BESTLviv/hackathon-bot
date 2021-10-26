@@ -41,13 +41,14 @@ updater = Updater(data=data)
 
 @bot.message_handler(commands=["start"])
 def start_bot(message):
-    user = updater.update_user_interaction_time(message)
 
     try:
+        user = updater.update_user_interaction_time(message)
         main_menu_section.send_start_menu(user)
 
     except Exception as e:
         print(f"Exception during start - {e}")
+        bot.send_message(message.chat_id, text="Упс, щось пішло не так. Спробуй знову!")
 
 
 @bot.message_handler(content_types=["text"])
