@@ -1,4 +1,9 @@
-from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery
+from telebot.types import (
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+    CallbackQuery,
+    Message,
+)
 
 from ..data import Data
 from ..data.user import User, Team
@@ -10,6 +15,7 @@ class AdminSection(Section):
 
     MENU_PHOTO: str = ""
     TEAM_LIST_SIZE: int = 10
+    TEAM_DELETION_CONFIRMATION: str = "DELETE"
 
     def __init__(self, data: Data):
         super().__init__(data)
@@ -36,6 +42,10 @@ class AdminSection(Section):
 
         elif action == "TeamInfoMenu":
             self.send_team_info_menu(user, call)
+
+        elif action == "DeleteTeam":
+            team_id = call.data.split(";")[2]
+            self.delete_team(user, team_id, call=call)
 
         self.bot.answer_callback_query(call.id)
 
@@ -70,6 +80,47 @@ class AdminSection(Section):
         markup = self._form_team_info_menu_markup(team=team)
 
         self._send_menu(user, text, photo=None, markup=markup, call=call)
+
+    def delete_team(
+        self, user: User, team_id: str, confirmed=False, call: CallbackQuery = None
+    ):
+        def confirm_deletion(message: Message):
+
+            if message.content_type == "text":
+                if message.text == self.TEAM_DELETION_CONFIRMATION:
+                    self.delete_team(user, team_id, confirmed=True)
+
+            else:
+                self.delete_team(user, team_id, confirmed=False)
+                return
+
+        try:
+            team = Team.objects.get(id=team_id)
+        except:
+            self.send_message(call, text="Ця команда вже була видалена")
+            return
+
+        if confirmed:
+            team_name = team.name
+
+            for member in team.members:
+                member.leave_team()
+            team.delete()
+            team.save()
+
+            self.bot.send_message(
+                user.chat_id, text=f"Команда {team_name} успішно видалена!"
+            )
+            self.send_team_list_menu(user)
+
+        else:
+            self.bot.send_message(
+                user.chat_id,
+                text=f"Для видалення команди {team.name} напиши слово-підтвeрдження -- {self.TEAM_DELETION_CONFIRMATION}",
+            )
+            self.bot.register_next_step_handler_by_chat_id(
+                user.chat_id, confirm_deletion
+            )
 
     def _send_menu(
         self,
@@ -169,7 +220,7 @@ class AdminSection(Section):
         left_btn = InlineKeyboardButton(
             text="👈",
             callback_data=self.form_admin_callback(
-                action=f"TeamListMenu:{page_number-1}", team_id=team.id, edit=True
+                action=f"TeamListMenu:{page_number-1}", edit=True
             ),
         )
         counter_btn = InlineKeyboardButton(
@@ -179,7 +230,7 @@ class AdminSection(Section):
         right_btn = InlineKeyboardButton(
             text="👉",
             callback_data=self.form_admin_callback(
-                action=f"TeamListMenu:{page_number+1}", team_id=team.id, edit=True
+                action=f"TeamListMenu:{page_number+1}", edit=True
             ),
         )
 
@@ -202,6 +253,14 @@ class AdminSection(Section):
             ),
         )
         markup.add(mail_team_btn)
+
+        delete_team_btn = InlineKeyboardButton(
+            text="Видалити команду",
+            callback_data=self.form_admin_callback(
+                action="DeleteTeam", team_id=team.id, delete=True
+            ),
+        )
+        markup.add(delete_team_btn)
 
         back_btn = self.create_back_button(
             callback_data=self.form_admin_callback(
