@@ -18,6 +18,10 @@ class Team(me.Document):
     def members(self):
         return [user for user in User.objects.filter(team=self)]
 
+    @property
+    def members_count(self) -> int:
+        return User.objects.filter(team=self).count()
+
     def __init__(self, *args, **values):
         super().__init__(*args, **values)
 

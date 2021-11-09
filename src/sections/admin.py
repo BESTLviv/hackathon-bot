@@ -9,6 +9,7 @@ from ..staff.sender import Sender, DestinationEnum
 class AdminSection(Section):
 
     MENU_PHOTO: str = ""
+    TEAM_LIST_SIZE: int = 10
 
     def __init__(self, data: Data):
         super().__init__(data)
@@ -30,7 +31,7 @@ class AdminSection(Section):
         elif action in self._mailing_destinations:
             self._process_mailing(user, call)
 
-        elif action == "TeamListMenu":
+        elif action.split(":")[0] == "TeamListMenu":
             self.send_team_list_menu(user, call)
 
         elif action == "TeamInfoMenu":
@@ -52,7 +53,8 @@ class AdminSection(Section):
 
     def send_team_list_menu(self, user: User, call: CallbackQuery = None):
         text = self.admin_info
-        markup = self._form_team_list_menu_markup()
+        page_number = int(call.data.split(";")[1].split(":")[1])
+        markup = self._form_team_list_menu_markup(page_number)
 
         self._send_menu(user, text, photo=None, markup=markup, call=call)
 
@@ -104,7 +106,7 @@ class AdminSection(Section):
 
         team_list_menu_btn = InlineKeyboardButton(
             text="Список команд",
-            callback_data=self.form_admin_callback(action="TeamListMenu", edit=True),
+            callback_data=self.form_admin_callback(action="TeamListMenu:1", edit=True),
         )
         markup.add(team_list_menu_btn)
 
@@ -127,17 +129,57 @@ class AdminSection(Section):
 
         return markup
 
-    def _form_team_list_menu_markup(self) -> InlineKeyboardMarkup:
+    def _form_team_list_menu_markup(self, page_number: int) -> InlineKeyboardMarkup:
+        def get_team_chunk(page_number):
+            team_count = Team.objects.count()
+            last_page_number = int(team_count / self.TEAM_LIST_SIZE) + 1
+
+            # define correct page number
+            if page_number == 0:
+                page_number = last_page_number
+
+            if page_number == last_page_number + 1:
+                page_number = 1
+
+            start_index = (page_number - 1) * self.TEAM_LIST_SIZE
+            end_index = page_number * self.TEAM_LIST_SIZE
+
+            if end_index > team_count:
+                end_index = team_count
+
+            return ([team for team in Team.objects[start_index:end_index]], page_number)
+
         markup = InlineKeyboardMarkup()
 
-        for team in Team.objects:
+        teams, page_number = get_team_chunk(page_number)
+
+        for team in teams:
             btn = InlineKeyboardButton(
-                text=f"{team.name} - {team.test_task_status[0]}",
+                text=f"{team.name} - {team.test_task_status[0]} | {team.members_count}",
                 callback_data=self.form_admin_callback(
                     action="TeamInfoMenu", team_name=team.name, edit=True
                 ),
             )
             markup.add(btn)
+
+        left_btn = InlineKeyboardButton(
+            text="👈",
+            callback_data=self.form_admin_callback(
+                action=f"TeamListMenu:{page_number-1}", team_name=team.name, edit=True
+            ),
+        )
+        counter_btn = InlineKeyboardButton(
+            text=f"{page_number}/{int(Team.objects.count() / self.TEAM_LIST_SIZE) + 1}",
+            callback_data="IGNORE",
+        )
+        right_btn = InlineKeyboardButton(
+            text="👉",
+            callback_data=self.form_admin_callback(
+                action=f"TeamListMenu:{page_number+1}", team_name=team.name, edit=True
+            ),
+        )
+
+        markup.add(left_btn, counter_btn, right_btn)
 
         back_btn = self.create_back_button(
             callback_data=self.form_admin_callback(action="AdminMenu", edit=True)
@@ -159,7 +201,7 @@ class AdminSection(Section):
 
         back_btn = self.create_back_button(
             callback_data=self.form_admin_callback(
-                action="TeamListMenu", team_name=team.name, edit=True
+                action="TeamListMenu:1", team_name=team.name, edit=True
             )
         )
         markup.add(back_btn)

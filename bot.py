@@ -98,6 +98,9 @@ def handle_callback_query(call):
         elif section == "Admin":
             admin_section.process_callback(user, call)
 
+        else:
+            bot.answer_callback_query(call.id)
+
     except Exception as e:
         print(e)
 

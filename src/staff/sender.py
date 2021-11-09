@@ -153,7 +153,7 @@ class Sender:
             if message.text == self.CANCEL_BUTTON_TEXT:
                 self.data.bot.send_message(
                     self.admin.chat_id,
-                    text="Скасовано!.",
+                    text="Скасовано!",
                     reply_markup=ReplyKeyboardRemove(),
                 )
                 self._return_to_prev_admin_menu()
