@@ -5,6 +5,7 @@ from telebot.types import (
     KeyboardButton,
     Message,
     ReplyKeyboardMarkup,
+    ReplyKeyboardRemove,
 )
 
 from ..data import Data
@@ -115,7 +116,9 @@ class AdminSection(Section):
             team.save()
 
             self.bot.send_message(
-                user.chat_id, text=f"Команда {team_name} успішно видалена!"
+                user.chat_id,
+                text=f"Команда {team_name} успішно видалена!",
+                reply_markup=ReplyKeyboardRemove(),
             )
             self.send_team_list_menu(user)
 
