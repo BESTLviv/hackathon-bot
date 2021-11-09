@@ -62,7 +62,7 @@ class AdminSection(Section):
         self._send_menu(user, text, photo=None, markup=markup, call=call)
 
     def send_team_list_menu(self, user: User, call: CallbackQuery = None):
-        text = self.admin_info
+        text = f"Кількість команд - {Team.objects.count()}"
         try:
             page_number = int(call.data.split(";")[1].split(":")[1])
         except:
