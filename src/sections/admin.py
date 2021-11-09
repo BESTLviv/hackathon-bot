@@ -53,14 +53,18 @@ class AdminSection(Section):
 
     def send_team_list_menu(self, user: User, call: CallbackQuery = None):
         text = self.admin_info
-        page_number = int(call.data.split(";")[1].split(":")[1])
+        try:
+            page_number = int(call.data.split(";")[1].split(":")[1])
+        except:
+            page_number = 1
+
         markup = self._form_team_list_menu_markup(page_number)
 
         self._send_menu(user, text, photo=None, markup=markup, call=call)
 
     def send_team_info_menu(self, user: User, call: CallbackQuery = None):
-        team_name = call.data.split(";")[2]
-        team = Team.objects.filter(name=team_name).first()
+        team_id = call.data.split(";")[2]
+        team = Team.objects.get(id=team_id)
 
         text = team.full_info
         markup = self._form_team_info_menu_markup(team=team)
@@ -82,15 +86,15 @@ class AdminSection(Section):
 
     def _process_mailing(self, user: User, call: CallbackQuery):
         destination = call.data.split(";")[1]
-        team_name = call.data.split(";")[2]
+        team_id = call.data.split(";")[2]
 
-        prev_admin_menu = self.send_team_list_menu if team_name else self.send_mail_menu
+        prev_admin_menu = self.send_team_list_menu if team_id else self.send_mail_menu
 
         sender = Sender(
             data=self.data,
             admin=user,
             destination=destination,
-            team_name=team_name,
+            team_id=team_id,
             prev_admin_menu=prev_admin_menu,
         )
         sender.send_custom_message()
@@ -157,7 +161,7 @@ class AdminSection(Section):
             btn = InlineKeyboardButton(
                 text=f"{team.name} - {team.test_task_status[0]} | {team.members_count}",
                 callback_data=self.form_admin_callback(
-                    action="TeamInfoMenu", team_name=team.name, edit=True
+                    action="TeamInfoMenu", team_id=team.id, edit=True
                 ),
             )
             markup.add(btn)
@@ -165,7 +169,7 @@ class AdminSection(Section):
         left_btn = InlineKeyboardButton(
             text="👈",
             callback_data=self.form_admin_callback(
-                action=f"TeamListMenu:{page_number-1}", team_name=team.name, edit=True
+                action=f"TeamListMenu:{page_number-1}", team_id=team.id, edit=True
             ),
         )
         counter_btn = InlineKeyboardButton(
@@ -175,7 +179,7 @@ class AdminSection(Section):
         right_btn = InlineKeyboardButton(
             text="👉",
             callback_data=self.form_admin_callback(
-                action=f"TeamListMenu:{page_number+1}", team_name=team.name, edit=True
+                action=f"TeamListMenu:{page_number+1}", team_id=team.id, edit=True
             ),
         )
 
@@ -194,14 +198,14 @@ class AdminSection(Section):
         mail_team_btn = InlineKeyboardButton(
             text="Надіслати повідомлення",
             callback_data=self.form_admin_callback(
-                action=DestinationEnum.TEAM.value, team_name=team.name, new=True
+                action=DestinationEnum.TEAM.value, team_id=team.id, new=True
             ),
         )
         markup.add(mail_team_btn)
 
         back_btn = self.create_back_button(
             callback_data=self.form_admin_callback(
-                action="TeamListMenu:1", team_name=team.name, edit=True
+                action="TeamListMenu:1", team_id=team.id, edit=True
             )
         )
         markup.add(back_btn)
