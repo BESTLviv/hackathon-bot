@@ -8,6 +8,7 @@ from telebot.types import (
     KeyboardButton,
     ReplyKeyboardMarkup,
     ReplyKeyboardRemove,
+    Video,
 )
 from telebot import TeleBot
 from mongoengine.queryset.queryset import QuerySet
@@ -40,27 +41,42 @@ class CustomMessage:
     text: str
     photo: str
     markup: InlineKeyboardMarkup
+    content_type: str
+    video: Video
 
-    def __init__(self):
+    def __init__(self, content_type: str):
         self.photo = None
         self.markup = InlineKeyboardMarkup()
+        self.content_type = content_type
 
     def format(self):
         self._extract_buttons()
 
     def send(self, bot: TeleBot, user: User):
 
-        if self.photo:
+        if self.content_type == "photo":
             bot.send_photo(
                 user.chat_id,
                 photo=self.photo,
                 caption=self.text,
                 reply_markup=self.markup,
             )
-        else:
+
+        elif self.content_type == "text":
             bot.send_message(user.chat_id, text=self.text, reply_markup=self.markup)
 
+        elif self.content_type == "video":
+            bot.send_video(
+                user.chat_id,
+                data=self.video.file_id,
+                caption=self.text,
+                reply_markup=self.markup,
+            )
+
     def _extract_buttons(self):
+        if self.text is None:
+            return
+
         split_text = self.text.split("[btn]")
 
         self.text = split_text[0]
@@ -131,7 +147,7 @@ class Sender:
 
     def _process_input(self, message: Message):
         content_type = message.content_type
-        self.custom_message = CustomMessage()
+        self.custom_message = CustomMessage(content_type)
 
         if content_type == "text":
             if message.text == self.CANCEL_BUTTON_TEXT:
@@ -148,6 +164,10 @@ class Sender:
         elif content_type == "photo":
             self.custom_message.text = message.caption
             self.custom_message.photo = message.photo
+
+        elif content_type == "video":
+            self.custom_message.video = message.video
+            self.custom_message.text = message.caption
 
         else:
             self.data.bot.send_message(
