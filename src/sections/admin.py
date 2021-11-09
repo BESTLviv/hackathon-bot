@@ -2,7 +2,9 @@ from telebot.types import (
     InlineKeyboardButton,
     InlineKeyboardMarkup,
     CallbackQuery,
+    KeyboardButton,
     Message,
+    ReplyKeyboardMarkup,
 )
 
 from ..data import Data
@@ -90,6 +92,10 @@ class AdminSection(Section):
                 if message.text == self.TEAM_DELETION_CONFIRMATION:
                     self.delete_team(user, team_id, confirmed=True)
 
+                elif message.text == "Скасувати":
+                    self.bot.send_message(user.chat_id, text="Скасовано!")
+                    return
+
             else:
                 self.delete_team(user, team_id, confirmed=False)
                 return
@@ -114,9 +120,12 @@ class AdminSection(Section):
             self.send_team_list_menu(user)
 
         else:
+            markup = ReplyKeyboardMarkup(one_time_keyboard=True)
+            markup.add(KeyboardButton(text="Скасувати"))
             self.bot.send_message(
                 user.chat_id,
                 text=f"Для видалення команди {team.name} напиши слово-підтвeрдження -- {self.TEAM_DELETION_CONFIRMATION}",
+                reply_markup=markup,
             )
             self.bot.register_next_step_handler_by_chat_id(
                 user.chat_id, confirm_deletion
