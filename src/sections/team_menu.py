@@ -67,6 +67,7 @@ class TeamMenu(Section):
         def process_test_task_send(message: Message, **kwargs):
             user: User = kwargs["user"]
             back_step = kwargs["back_step"]
+            cancel_markup = self.create_cancel_markup()
 
             if message.content_type == "text":
                 text = message.text
@@ -79,21 +80,31 @@ class TeamMenu(Section):
                     )
                     return
 
+                elif text == self.CANCEL_BUTTON_TEXT:
+                    self.bot.send_message(user.chat_id, text="Скасовано!")
+                    return
+
                 else:
                     self.bot.send_message(
-                        user.chat_id, text="Посилання має починатись на https://"
+                        user.chat_id,
+                        text="Посилання має починатись на https://",
+                        reply_markup=cancel_markup,
                     )
                     back_step(user)
                     return
             else:
                 self.bot.send_message(
-                    user.chat_id, text="Посилання має бути у вигляді тексту."
+                    user.chat_id,
+                    text="Посилання має бути у вигляді тексту.",
+                    reply_markup=cancel_markup,
                 )
                 back_step(user)
                 return
 
         text = "Надішли мені посилання на гіт репозиторій."
-        self.bot.send_message(user.chat_id, text=text)
+        markup = self.create_cancel_markup()
+
+        self.bot.send_message(user.chat_id, text=text, reply_markup=markup)
 
         self.bot.register_next_step_handler_by_chat_id(
             user.chat_id,

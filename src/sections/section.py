@@ -1,4 +1,10 @@
-from telebot.types import InlineKeyboardButton, CallbackQuery, InputMediaPhoto
+from telebot.types import (
+    InlineKeyboardButton,
+    CallbackQuery,
+    InputMediaPhoto,
+    KeyboardButton,
+    ReplyKeyboardMarkup,
+)
 
 from ..data import Data, User
 
@@ -56,8 +62,12 @@ class Section:
         text = "Назад"
         return InlineKeyboardButton(text=text, callback_data=callback_data)
 
-    def create_cancel_button(self):
-        pass
+    def create_cancel_markup(self) -> ReplyKeyboardMarkup:
+        markup = ReplyKeyboardMarkup(one_time_keyboard=True)
+        btn = KeyboardButton(text=self.CANCEL_BUTTON_TEXT)
+        markup.add(btn)
+
+        return markup
 
     ##################
     # Answer Callbacks
