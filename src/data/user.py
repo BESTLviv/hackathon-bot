@@ -3,6 +3,12 @@ from datetime import datetime, timezone
 import mongoengine as me
 
 
+class Resume(me.EmbeddedDocument):
+    file_id = me.StringField(required=True)
+    file_name = me.StringField(required=True)
+    file_size = me.IntField(required=True)
+
+
 class Team(me.Document):
     name = me.StringField(required=True)
     password = me.StringField(required=True)
@@ -49,8 +55,15 @@ class Team(me.Document):
         return f"{self}\n\n" f"<b>Технології:</b>\n" f"{used_techs}"
 
     def __str__(self) -> str:
-        users_list = "\n".join(
-            [f"{user.name} - @{user.username}" for user in self.members]
+        members = self.members
+
+        users_list = "\n".join([f"{user.name} - @{user.username}" for user in members])
+
+        cv_list = "\n".join(
+            [
+                f"{user.name} - {user.resume.file_name if user.resume else 'резюме не надіслано.'}"
+                for user in members
+            ]
         )
         is_participate = "✅" if self.test_task_passed else "❌"
 
@@ -59,6 +72,8 @@ class Team(me.Document):
             f"Команда <b>{team_name}</b>\n\n"
             f"<b>Учасники команди:</b>\n"
             f"{users_list}\n\n"
+            f"<b>Резюме:</b>\n"
+            f"{cv_list}\n\n"
             f"<b>Тестове завдання</b> - {self.test_task_status[0]} ({self.test_task_status[1]})\n"
             f"<b>Команда бере участь в хакатоні</b> - {is_participate}"
         )
@@ -69,8 +84,7 @@ class User(me.Document):
     name = me.StringField(default=None)
     surname = me.StringField(default=None)
     username = me.StringField(default=None)
-    cv_file_id = me.StringField(default=None)
-    cv_file_name = me.StringField(default=None)
+    resume = me.EmbeddedDocumentField(Resume, default=None)
     additional_info = me.DictField(default=None)
     team: Team = me.ReferenceField(Team, required=False)
     register_source = me.StringField(default="Unknown")
@@ -94,6 +108,15 @@ class User(me.Document):
     def update_test_task(self, link: str):
         self.team.test_task = link
         self.team.save()
+
+    def update_resume(self, user, container):
+        resume = Resume(
+            file_id=container["file_id"],
+            file_name=container["file_name"],
+            file_size=container["file_size"],
+        )
+        self.resume = resume
+        self.save()
 
     def leave_team(self):
         self.team = None

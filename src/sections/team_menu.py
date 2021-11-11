@@ -32,6 +32,7 @@ class TeamMenu(Section):
             "LogoutTeam": self._logout_team,
             "EditTeam": self._send_edit_team_menu,
             "SendTask": self._send_test_task,
+            "CV": self._send_cv,
         }
 
     def process_callback(self, user: User, call: CallbackQuery):
@@ -179,6 +180,17 @@ class TeamMenu(Section):
         self.bot.send_message(user.chat_id, f"Ти успішно покинув команду.")
         self.send_team_info_menu(user, call)
 
+    def _send_cv(self, user: User, call: CallbackQuery):
+        cv_request_quiz = self.data.cv_request_quiz
+
+        quiz.start_quiz(
+            user,
+            self.bot,
+            quiz=cv_request_quiz,
+            save_func=user.update_resume,
+            final_func=self.send_team_info_menu,
+        )
+
     def _create_team_info_markup(self, user: User) -> InlineKeyboardMarkup:
 
         register_team_btn = InlineKeyboardButton(
@@ -201,12 +213,18 @@ class TeamMenu(Section):
             callback_data=self.form_team_callback(action="SendTask", edit=True),
         )
 
+        cv_btn = InlineKeyboardButton(
+            text="Здати резюме",
+            callback_data=self.form_team_callback(action="CV", edit=True),
+        )
+
         markup = InlineKeyboardMarkup()
 
         if user.team is None:
             markup.add(register_team_btn, login_team_btn)
         else:
             markup.add(test_task_btn)
+            markup.add(cv_btn)
             markup.add(logout_team_btn)
 
         return markup

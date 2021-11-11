@@ -39,8 +39,8 @@ class Data:
         return Quiz.objects.filter(name="LoginTeamQuiz").first()
 
     @property
-    def cv_count(self) -> int:
-        return User.objects.filter(cv_file_id__ne=None).count()
+    def cv_request_quiz(self) -> Quiz:
+        return Quiz.objects.filter(name="CvQuiz").first()
 
     def create_system_tables(self):
         self._create_quizes()

@@ -176,6 +176,11 @@ def process_message(message: Message, **kwargs):
             elif content_type == "photo":
                 container[question.name] = message.photo[-1].file_id
 
+            elif content_type == "document":
+                container["file_id"] = message.document.file_id
+                container["file_name"] = message.document.file_name
+                container["file_size"] = message.document.file_size
+
             else:
                 raise InputException
 
