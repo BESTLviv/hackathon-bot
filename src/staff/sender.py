@@ -9,6 +9,7 @@ from telebot.types import (
     ReplyKeyboardMarkup,
     ReplyKeyboardRemove,
     Video,
+    File,
 )
 from telebot import TeleBot
 from mongoengine.queryset.queryset import QuerySet
@@ -43,6 +44,7 @@ class CustomMessage:
     markup: InlineKeyboardMarkup
     content_type: str
     video: Video
+    file: File
 
     def __init__(self, content_type: str):
         self.photo = None
@@ -69,6 +71,14 @@ class CustomMessage:
             bot.send_video(
                 user.chat_id,
                 data=self.video.file_id,
+                caption=self.text,
+                reply_markup=self.markup,
+            )
+
+        elif self.content_type == "document":
+            bot.send_document(
+                user.chat_id,
+                data=self.file.file_id,
                 caption=self.text,
                 reply_markup=self.markup,
             )
@@ -169,9 +179,14 @@ class Sender:
             self.custom_message.video = message.video
             self.custom_message.text = message.caption
 
+        elif content_type == "document":
+            self.custom_message.file = message.document
+            self.custom_message.text = message.caption
+
         else:
             self.data.bot.send_message(
-                self.admin.chat_id, text="Підтримується лише розсилка тексту та фото."
+                self.admin.chat_id,
+                text="Підтримується розсилка тексту, фото, відео та файлів.",
             )
             return
 
