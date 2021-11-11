@@ -31,7 +31,7 @@ class Team(me.Document):
             return ("🕑", "не здано")
 
         if self.test_task and self.test_task_passed is None:
-            return ("📝", f"<a href='{self.test_task}'>на перевірці</a>")
+            return ("📝", f"на перевірці - <a href='{self.test_task}'>посилання</a>")
 
         if self.test_task and self.test_task_passed is False:
             return ("❌", f"<a href='{self.test_task}'>провалено</a>")
@@ -90,6 +90,10 @@ class User(me.Document):
                 return True
 
         return False
+
+    def update_test_task(self, link: str):
+        self.team.test_task = link
+        self.team.save()
 
     def leave_team(self):
         self.team = None

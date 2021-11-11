@@ -17,16 +17,21 @@ from ..staff import quiz, utils
 
 
 class TeamMenu(Section):
+
+    MENU_PHOTO: str = "https://i.ibb.co/SxkcpyG/Desktop88-5.png"
+
     def __init__(self, data: Data):
         super().__init__(data)
 
     @property
     def menu_action(self):
         return {
+            "TeamInfo": self.send_team_info_menu,
             "RegisterTeam": self._register_team,
             "LoginTeam": self._login_team,
             "LogoutTeam": self._logout_team,
             "EditTeam": self._send_edit_team_menu,
+            "SendTask": self._send_test_task,
         }
 
     def process_callback(self, user: User, call: CallbackQuery):
@@ -43,11 +48,11 @@ class TeamMenu(Section):
 
         if user.team is None:
             text = "У тебе ще немає команди!"
-            photo = "https://i.ibb.co/SxkcpyG/Desktop88-5.png"
+            photo = self.MENU_PHOTO
 
         else:
             text = str(user.team)
-            photo = "https://i.ibb.co/SxkcpyG/Desktop88-5.png"  # user.team.photo
+            photo = self.MENU_PHOTO  # user.team.photo
 
         markup = self._create_team_info_markup(user)
 
@@ -57,6 +62,45 @@ class TeamMenu(Section):
             self.bot.send_photo(
                 chat_id=user.chat_id, caption=text, photo=photo, reply_markup=markup
             )
+
+    def _send_test_task(self, user: User, call: CallbackQuery = None):
+        def process_test_task_send(message: Message, **kwargs):
+            user: User = kwargs["user"]
+            back_step = kwargs["back_step"]
+
+            if message.content_type == "text":
+                text = message.text
+                if text.startswith("https://"):
+                    task_link = text.split(" ")[0]
+                    user.update_test_task(task_link)
+
+                    self.bot.send_message(
+                        user.chat_id, text="Тестове завдання успішно здано!"
+                    )
+                    return
+
+                else:
+                    self.bot.send_message(
+                        user.chat_id, text="Посилання має починатись на https://"
+                    )
+                    back_step(user)
+                    return
+            else:
+                self.bot.send_message(
+                    user.chat_id, text="Посилання має бути у вигляді тексту."
+                )
+                back_step(user)
+                return
+
+        text = "Надішли мені посилання на гіт репозиторій."
+        self.bot.send_message(user.chat_id, text=text)
+
+        self.bot.register_next_step_handler_by_chat_id(
+            user.chat_id,
+            process_test_task_send,
+            user=user,
+            back_step=self._send_test_task,
+        )
 
     def _send_edit_team_menu(self, user: User, call: CallbackQuery):
         self.send_message(call, text="Меню редагування команди")
@@ -141,11 +185,17 @@ class TeamMenu(Section):
             callback_data=self.form_team_callback(action="LogoutTeam", edit=True),
         )
 
+        test_task_btn = InlineKeyboardButton(
+            text="Здати завдання",
+            callback_data=self.form_team_callback(action="SendTask", edit=True),
+        )
+
         markup = InlineKeyboardMarkup()
 
         if user.team is None:
             markup.add(register_team_btn, login_team_btn)
         else:
+            markup.add(test_task_btn)
             markup.add(logout_team_btn)
 
         return markup

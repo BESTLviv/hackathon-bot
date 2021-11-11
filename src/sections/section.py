@@ -4,6 +4,9 @@ from ..data import Data, User
 
 
 class Section:
+
+    CANCEL_BUTTON_TEXT = "Скасувати"
+
     def __init__(self, data: Data):
         self.data = data
         self.bot = data.bot
@@ -52,6 +55,9 @@ class Section:
     def create_back_button(self, callback_data):
         text = "Назад"
         return InlineKeyboardButton(text=text, callback_data=callback_data)
+
+    def create_cancel_button(self):
+        pass
 
     ##################
     # Answer Callbacks
