@@ -43,6 +43,11 @@ class AdminSection(Section):
         elif action.split(":")[0] == "TeamListMenu":
             self.send_team_list_menu(user, call)
 
+        elif action.split(":")[0] == "ReviewTask":
+            team_id = call.data.split(";")[2]
+            is_approved = bool(int(action.split(":")[1]))
+            self.review_task(user, call, team_id, is_approved)
+
         elif action == "TeamInfoMenu":
             self.send_team_info_menu(user, call)
 
@@ -133,6 +138,46 @@ class AdminSection(Section):
             self.bot.register_next_step_handler_by_chat_id(
                 user.chat_id, confirm_deletion
             )
+
+    def review_task(
+        self, user: User, call: CallbackQuery, team_id: str, is_approved: bool
+    ):
+        team: Team = Team.objects.get(id=team_id)
+        admin_text = str()
+        team_text = str()
+
+        if is_approved:
+            team.test_task_passed = True
+            admin_text = f"Команда {team.name} бере участь в хакатоні!"
+            team_text = (
+                "Йоу йоу йоу!!!!\n"
+                "Спішу повідомити вас, що ви пройшли на Хакатон🥳🥳 Для нас - це настільки ж прекрасна новина як і для вас, тому що - це чудо, мати таких крутих учасників в нашому проекті💚\n"
+                "Сподіваємось, ви зарядилися цією інформацію і готові розривати всіх своїми навичками, а також ділитись енергією і так само мотивувати її показати найкращий результат😜\n"
+                "Готуйтесь, але не забувайте work hard, play harder і тоді з вами цей хакатон стане легендарним, а разом з ним і його учасники🤗\n"
+            )
+        else:
+            team.test_task_passed = False
+            admin_text = f"Команда {team.name} не братиме участь в хакатоні!"
+            team_text = (
+                "Привіт-привіт!\n"
+                "Ми розглянули вашу подачу на Хакатон. Ви великі молодці, що виконали тестове завдання і це вже дуже круто!😎👍Вам не вистачило зовсім трішки аби стати учасниками.\n"
+                "Проте, не сумуйте та не опускайте руки, ми чекатимемо вас на наступних наших проектах!\n"
+                "Команда [BEST::Hackath0n'6]💚)\n"
+            )
+
+        team.save()
+
+        receivers_count = 0
+        for member in team.members:
+            self.bot.send_message(member.chat_id, text=team_text)
+            receivers_count += 1
+
+        self.bot.send_message(
+            user.chat_id,
+            text=f"{admin_text}\n\nНадіслано {receivers_count}/{team.members_count} повідомлень.",
+        )
+
+        self.send_team_info_menu(user, call)
 
     def _send_menu(
         self,
@@ -265,6 +310,21 @@ class AdminSection(Section):
             ),
         )
         markup.add(mail_team_btn)
+
+        if team.test_task and team.test_task_passed is None:
+            approve_btn = InlineKeyboardButton(
+                text="Approve",
+                callback_data=self.form_admin_callback(
+                    action="ReviewTask:1", team_id=team.id, edit=True
+                ),
+            )
+            reject_btn = InlineKeyboardButton(
+                text="Reject",
+                callback_data=self.form_admin_callback(
+                    action="ReviewTask:0", team_id=team.id, edit=True
+                ),
+            )
+            markup.add(approve_btn, reject_btn)
 
         delete_team_btn = InlineKeyboardButton(
             text="Видалити команду",

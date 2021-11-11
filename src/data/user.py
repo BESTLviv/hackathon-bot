@@ -34,10 +34,10 @@ class Team(me.Document):
             return ("📝", f"на перевірці - <a href='{self.test_task}'>посилання</a>")
 
         if self.test_task and self.test_task_passed is False:
-            return ("❌", f"<a href='{self.test_task}'>провалено</a>")
+            return ("❌", f"не пройшли - <a href='{self.test_task}'>посилання</a>")
 
         if self.test_task_passed is True:
-            return ("✅", f"<a href='{self.test_task}'>здано</a>")
+            return ("✅", f"здано - <a href='{self.test_task}'>посилання</a>")
 
         return ("❌", "не здано")
 
@@ -52,7 +52,7 @@ class Team(me.Document):
         users_list = "\n".join(
             [f"{user.name} - @{user.username}" for user in self.members]
         )
-        is_participate = "✅" if self.is_active else "❌"
+        is_participate = "✅" if self.test_task_passed else "❌"
 
         team_name = str(self.name).replace("<", "*").replace(">", "*")
         return (
