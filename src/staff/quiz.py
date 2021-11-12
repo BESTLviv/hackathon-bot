@@ -151,6 +151,16 @@ def process_message(message: Message, **kwargs):
         if _handle_commands(message) is True:
             return
 
+        if content_type == "text":
+            # cancel quiz if it the CANCEL button was pressed
+            if is_required is False and message.text == CANCEL_BUTTON_TEXT:
+                bot.send_message(
+                    user.chat_id,
+                    text="Я скасував усі твої дії :)\nНажимай /start щоб продовжити",
+                    reply_markup=ReplyKeyboardRemove(),
+                )
+                return False
+
         if content_type == question.input_type:
 
             if content_type == "text":
