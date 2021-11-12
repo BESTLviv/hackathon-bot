@@ -91,7 +91,7 @@ class User(me.Document):
     name = me.StringField(default=None)
     surname = me.StringField(default=None)
     username = me.StringField(default=None)
-    resume = me.EmbeddedDocumentField(Resume, default=None)
+    resume: Resume = me.EmbeddedDocumentField(Resume, default=None)
     additional_info = me.DictField(default=None)
     org_questions = me.DictField(default=None)  # like size of T-shirt or post index
     team: Team = me.ReferenceField(Team, required=False)
