@@ -196,6 +196,7 @@ class Sender:
         try:
             self.custom_message.format()
         except Exception as e:
+            print(f"[Sender] Error - {e}")
             self.data.bot.send_message(self.admin.chat_id, text=f"{e}")
             return
 
@@ -210,6 +211,7 @@ class Sender:
             try:
                 self.custom_message.send(self.data.bot, user)
             except Exception as e:
+                print(f"[Sender] Error - {e}")
                 self.data.bot.send_message(self.admin.chat_id, text=f"{e}")
                 blocked_users += 1
 
