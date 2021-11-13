@@ -1,4 +1,5 @@
 from enum import Enum
+from os import close
 import re
 
 from telebot.types import (
@@ -10,6 +11,7 @@ from telebot.types import (
     ReplyKeyboardRemove,
     Video,
     File,
+    Poll,
 )
 from telebot import TeleBot
 from mongoengine.queryset.queryset import QuerySet
@@ -39,17 +41,20 @@ class DestinationEnum(Enum):
 
 
 class CustomMessage:
-    text: str
+    text: str = None
     photo: str
     markup: InlineKeyboardMarkup
     content_type: str
     video: Video
     file: File
+    poll: Poll
+    poll_temp_message: Message = None  # contents original poll inside
 
-    def __init__(self, content_type: str):
+    def __init__(self, content_type: str, admin: User):
         self.photo = None
         self.markup = InlineKeyboardMarkup()
         self.content_type = content_type
+        self.admin = admin
 
     def format(self):
         self._extract_buttons()
@@ -82,6 +87,33 @@ class CustomMessage:
                 caption=self.text,
                 reply_markup=self.markup,
             )
+
+        elif self.content_type == "poll":
+            self._send_poll_message(bot, user)
+
+    def _send_poll_message(self, bot: TeleBot, user: User):
+        poll = self.poll
+
+        if self.poll_temp_message is None:
+            options = [q.text for q in poll.options]
+            self.poll_temp_message = bot.send_poll(
+                chat_id=self.admin.chat_id,
+                question=poll.question,
+                options=options,
+                is_anonymous=poll.is_anonymous,
+                type=poll.type,
+                allows_multiple_answers=poll.allows_multiple_answers,
+                correct_option_id=poll.correct_option_id,
+                explanation=poll.explanation,
+                close_date=poll.close_date,
+                is_closed=poll.is_closed,
+            )
+
+        bot.forward_message(
+            user.chat_id,
+            from_chat_id=self.poll_temp_message.chat.id,
+            message_id=self.poll_temp_message.message_id,
+        )
 
     def _extract_buttons(self):
         if self.text is None:
@@ -157,7 +189,7 @@ class Sender:
 
     def _process_input(self, message: Message):
         content_type = message.content_type
-        self.custom_message = CustomMessage(content_type)
+        self.custom_message = CustomMessage(content_type, self.admin)
 
         if content_type == "text":
             if message.text == self.CANCEL_BUTTON_TEXT:
@@ -183,10 +215,13 @@ class Sender:
             self.custom_message.file = message.document
             self.custom_message.text = message.caption
 
+        elif content_type == "poll":
+            self.custom_message.poll = message.poll
+
         else:
             self.data.bot.send_message(
                 self.admin.chat_id,
-                text="Підтримується розсилка тексту, фото, відео та файлів.",
+                text="Підтримується розсилка тексту, фото, відео, файлів та голосувань.",
             )
             return
 
