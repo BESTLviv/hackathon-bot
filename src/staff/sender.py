@@ -12,6 +12,7 @@ from telebot.types import (
     Video,
     File,
     Poll,
+    Sticker,
 )
 from telebot import TeleBot
 from mongoengine.queryset.queryset import QuerySet
@@ -47,6 +48,7 @@ class CustomMessage:
     content_type: str
     video: Video
     file: File
+    sticker: Sticker
     poll: Poll
     poll_temp_message: Message = None  # contents original poll inside
 
@@ -90,6 +92,9 @@ class CustomMessage:
 
         elif self.content_type == "poll":
             self._send_poll_message(bot, user)
+
+        elif self.content_type == "sticker":
+            bot.send_sticker(user.chat_id, data=self.sticker.file_id)
 
     def _send_poll_message(self, bot: TeleBot, user: User):
         poll = self.poll
@@ -217,6 +222,9 @@ class Sender:
 
         elif content_type == "poll":
             self.custom_message.poll = message.poll
+
+        elif content_type == "sticker":
+            self.custom_message.sticker = message.sticker
 
         else:
             self.data.bot.send_message(
