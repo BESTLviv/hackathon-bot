@@ -6,7 +6,9 @@ class Question(me.EmbeddedDocument):
     message = me.StringField(required=True)
     # photo = me.StringField(default=None)
     buttons = me.ListField(default=list())
-    input_type = me.StringField(choices=["text", "photo", "contact"], default="text")
+    input_type = me.StringField(
+        choices=["text", "photo", "contact", "document"], default="text"
+    )
     max_text_size = me.IntField(max_value=4000)
     allow_user_input = me.BooleanField(default=True)
     regex = me.StringField(default=None)

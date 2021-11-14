@@ -33,6 +33,7 @@ class TeamMenu(Section):
             "EditTeam": self._send_edit_team_menu,
             "SendTask": self._send_test_task,
             "CV": self._send_cv,
+            "OrgQuestions": self._send_org_questions_quiz,
         }
 
     def process_callback(self, user: User, call: CallbackQuery):
@@ -191,6 +192,17 @@ class TeamMenu(Section):
             final_func=self.send_team_info_menu,
         )
 
+    def _send_org_questions_quiz(self, user: User, call: CallbackQuery):
+        cv_request_quiz = self.data.org_questions_quiz
+
+        quiz.start_quiz(
+            user,
+            self.bot,
+            quiz=cv_request_quiz,
+            save_func=user.update_org_questions,
+            final_func=self.send_team_info_menu,
+        )
+
     def _create_team_info_markup(self, user: User) -> InlineKeyboardMarkup:
 
         register_team_btn = InlineKeyboardButton(
@@ -218,13 +230,23 @@ class TeamMenu(Section):
             callback_data=self.form_team_callback(action="CV", edit=True),
         )
 
+        org_quiz_btn = InlineKeyboardButton(
+            text="Організаційна форма",
+            callback_data=self.form_team_callback(action="OrgQuestions", edit=True),
+        )
+
         markup = InlineKeyboardMarkup()
 
         if user.team is None:
-            markup.add(register_team_btn, login_team_btn)
+            if (
+                self.data.hackathon.current_menu
+                == self.data.hackathon.p_registration_menu
+            ):
+                markup.add(register_team_btn, login_team_btn)
         else:
             markup.add(test_task_btn)
             markup.add(cv_btn)
+            markup.add(org_quiz_btn)
             markup.add(logout_team_btn)
 
         return markup

@@ -42,20 +42,30 @@ class Data:
     def cv_request_quiz(self) -> Quiz:
         return Quiz.objects.filter(name="CvQuiz").first()
 
+    @property
+    def org_questions_quiz(self) -> Quiz:
+        return Quiz.objects.filter(name="OrqQuestionsQuiz").first()
+
     def create_system_tables(self):
         self._create_quizes()
 
         self._create_hackathon()
 
     def _create_quizes(self):
-        if Quiz.objects.filter(name="StartQuiz").count() == 0:
+        if self.start_quiz is None:
             self._create_start_quiz()
 
-        if Quiz.objects.filter(name="RegisterTeamQuiz").count() == 0:
+        if self.register_team_quiz is None:
             self._create_register_team_quiz()
 
-        if Quiz.objects.filter(name="LoginTeamQuiz").count() == 0:
+        if self.login_team_quiz is None:
             self._create_login_team_quiz()
+
+        if self.cv_request_quiz is None:
+            self._create_cv_request_quiz()
+
+        if self.org_questions_quiz is None:
+            self._create_org_questions_quiz()
 
     def _create_start_quiz(self):
 
@@ -207,6 +217,110 @@ class Data:
         quiz.save()
 
         print("LoginTeamQuiz has been added")
+
+    def _create_cv_request_quiz(self):
+        quiz = Quiz(name="CvQuiz", is_required=False)
+
+        q_file_request = Question(
+            name="file_request",
+            message="Надішли своє резюме файлом.",
+            input_type="document",
+            allow_user_input=True,
+            correct_answer_message="It is fucking amazing!",
+            wrong_answer_message="Я очікував від тебе файл, а ти...",
+        )
+
+        quiz.questions = [q_file_request]
+        quiz.save()
+
+        print("CvQuiz has been added")
+
+    def _create_org_questions_quiz(self):
+        quiz = Quiz(name="OrqQuestionsQuiz", is_required=False)
+
+        q_tshirt_size = Question(
+            name="tshirt_size",
+            message="Який у тебе розмір футболки?",
+            input_type="text",
+            correct_answer_message="В мене також🔥",
+            wrong_answer_message="ERROR: Відповідь має бути щось з цього S, M, L, XL, XXL, XXXL👾",
+        )
+
+        q_np_number = Question(
+            name="new_post_number",
+            message="З якого відділення Нової пошти тобі зручно забрати посилку?",
+            input_type="text",
+            correct_answer_message="Супер🔥",
+            wrong_answer_message="ERROR: Напиши номер відділення👾",
+        )
+
+        q_pib = Question(
+            name="pib",
+            message="ПІБ",
+            input_type="text",
+            correct_answer_message="Дякую💚",
+            wrong_answer_message="ERROR: Відповідь має бути текстом👾",
+        )
+
+        q_is_discord = Question(
+            name="discord",
+            message="Маєш аккаунт в Discord?\nЯкщо ні, тоді створи його🔥\nhttps://discord.com/",
+            input_type="text",
+            buttons=["Так", "Ні"],
+            allow_user_input=False,
+            correct_answer_message="Супер🔥",
+            wrong_answer_message="ERROR: Вибери один з поданих варіантів👾",
+        )
+
+        q_comments = Question(
+            name="comments",
+            message="Маєш якісь коментарі?",
+            input_type="text",
+            correct_answer_message="Супер🔥",
+            wrong_answer_message="ERROR: Відповідь має бути текстом👾",
+        )
+
+        q_city = Question(
+            name="city",
+            message="Місто проживання",
+            input_type="text",
+            correct_answer_message="Круто🔥",
+            wrong_answer_message="ERROR: Відповідь має бути текстом👾",
+        )
+
+        q_is_cv = Question(
+            name="is_cv",
+            message="Надіслав CV?\nЯкщо ні, тоді поспіши, адже часу не так багато🔥",
+            input_type="text",
+            buttons=["Так", "Ні"],
+            allow_user_input=False,
+            correct_answer_message="Супер🔥",
+            wrong_answer_message="ERROR: Вибери один з поданих варіантів👾",
+        )
+
+        q_final = Question(
+            name="data_processing",
+            message="Залишилося тільки дати згоду на обробку даних.",
+            input_type="text",
+            buttons=["Даю дозвіл"],
+            allow_user_input=False,
+            correct_answer_message="Супер🔥",
+            wrong_answer_message="ERROR: Неправильний формат👾",
+        )
+
+        quiz.questions = [
+            q_tshirt_size,
+            q_np_number,
+            q_pib,
+            q_is_discord,
+            q_comments,
+            q_city,
+            q_is_cv,
+            q_final,
+        ]
+        quiz.save()
+
+        print("OrqQuestionsQuiz has been added")
 
     def _create_hackathon(self):
 

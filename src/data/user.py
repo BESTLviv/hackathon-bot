@@ -65,6 +65,11 @@ class Team(me.Document):
                 for user in members
             ]
         )
+
+        org_passed_users_list = "\n".join(
+            [f"{user.name} - {'✅' if user.org_questions else '❌'}" for user in members]
+        )
+
         is_participate = "✅" if self.test_task_passed else "❌"
 
         team_name = str(self.name).replace("<", "*").replace(">", "*")
@@ -74,6 +79,8 @@ class Team(me.Document):
             f"{users_list}\n\n"
             f"<b>Резюме:</b>\n"
             f"{cv_list}\n\n"
+            f"<b>Заповнена орг форма?:</b>\n"
+            f"{org_passed_users_list}\n\n"
             f"<b>Тестове завдання</b> - {self.test_task_status[0]} ({self.test_task_status[1]})\n"
             f"<b>Команда бере участь в хакатоні</b> - {is_participate}"
         )
@@ -86,6 +93,7 @@ class User(me.Document):
     username = me.StringField(default=None)
     resume = me.EmbeddedDocumentField(Resume, default=None)
     additional_info = me.DictField(default=None)
+    org_questions = me.DictField(default=None)  # like size of T-shirt or post index
     team: Team = me.ReferenceField(Team, required=False)
     register_source = me.StringField(default="Unknown")
     registration_date = me.DateTimeField(required=True)
@@ -117,6 +125,10 @@ class User(me.Document):
             file_size=container["file_size"],
         )
         self.resume = resume
+        self.save()
+
+    def update_org_questions(self, user, container):
+        self.org_questions = container
         self.save()
 
     def leave_team(self):
