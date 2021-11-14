@@ -1,5 +1,5 @@
 from enum import Enum
-from os import close
+from typing import Union
 import re
 
 from telebot.types import (
@@ -25,7 +25,8 @@ class DestinationEnum(Enum):
     ALL = "msg ALL"
     ALL_REGISTERED = "msg ALL_REGISTERED"
     ALL_UNREGISTERED = "msg ALL UNREGISTERED"
-    ALL_WITH_TEAMS = "msg ALL WITH TEAMS"  # those who passed test task
+    ALL_WITH_TEAMS = "msg ALL WITH TEAMS"
+    ALL_PARTICIPANTS = "msg ALL PARTICIPANTS"  # those who participate in hack
     TEAM = "msg TEAM"
     USER = "msg USER"
     ME = "msg ME"
@@ -37,6 +38,7 @@ class DestinationEnum(Enum):
             cls.ALL_REGISTERED.value,
             cls.ALL_UNREGISTERED.value,
             cls.ALL_WITH_TEAMS.value,
+            cls.ALL_PARTICIPANTS.value,
             cls.ME.value,
         ]
 
@@ -243,7 +245,7 @@ class Sender:
             self.data.bot.send_message(self.admin.chat_id, text=f"{e}")
             return
 
-        receivers_count = self.receiver_list.count()
+        receivers_count = len(self.receiver_list)
         progress_message = self.data.bot.send_message(
             self.admin.chat_id,
             text=self.progress_text.format(0, receivers_count, 0),
@@ -275,13 +277,18 @@ class Sender:
 
         self._return_to_prev_admin_menu()
 
-    def _get_receiver_list(self, destination: str) -> QuerySet:
+    def _get_receiver_list(self, destination: str) -> Union[QuerySet, list]:
 
         if destination == DestinationEnum.ALL.value:
             return User.objects.filter(is_blocked=False)
 
         elif destination == DestinationEnum.ALL_WITH_TEAMS.value:
             return User.objects.filter(team__ne=None)
+
+        elif destination == DestinationEnum.ALL_PARTICIPANTS.value:
+            users = User.objects
+            participants = filter(lambda user: user.is_participant, users)
+            return list(participants)
 
         elif destination == DestinationEnum.ALL_REGISTERED.value:
             return User.objects.filter(additional_info__ne=None)

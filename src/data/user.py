@@ -98,9 +98,10 @@ class User(me.Document):
     def is_registered(self) -> bool:
         return self.additional_info != None
 
+    @property
     def is_participant(self):
         if self.team:
-            if self.team.is_active:
+            if self.team.test_task_passed:
                 return True
 
         return False
