@@ -126,6 +126,12 @@ class TeamMenu(Section):
             )
             return
 
+        if self.data.hackathon.current_menu != self.data.hackathon.p_registration_menu:
+            self.bot.send_message(
+                user.chat_id, f"Реєстрація вже закінчилась."
+            )
+            return
+
         quiz.start_quiz(
             user=user,
             bot=self.bot,
@@ -243,6 +249,8 @@ class TeamMenu(Section):
                 == self.data.hackathon.p_registration_menu
             ):
                 markup.add(register_team_btn, login_team_btn)
+            else:
+                markup.add(login_team_btn)
         else:
             markup.add(test_task_btn)
             markup.add(cv_btn)

@@ -99,7 +99,20 @@ def handle_text_buttons(message):
 
             print(f"Updated - {counter}/{len(registered_users)}")
 
-        # bot.send_message(user.chat_id, f"{time.time() - start}")
+        elif message_text == "suka_force_forward":
+            data.hackathon.switch_to_next_menu()
+            users = User.objects.filter(team__ne=None)
+            counter = 0
+            for u in users:
+                try:
+                    data.hackathon.current_menu.send_menu(bot, u)
+                    counter += 1
+                except Exception as e:
+                    print(
+                        f"[Updater] ERROR while menu update for {user.username} - {e}"
+                    )
+
+            print(f"Updated - {counter}/{len(users)}")
 
     except Exception as e:
         print(e)

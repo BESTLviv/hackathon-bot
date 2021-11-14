@@ -79,7 +79,7 @@ class Team(me.Document):
             f"{users_list}\n\n"
             f"<b>Резюме:</b>\n"
             f"{cv_list}\n\n"
-            f"<b>Заповнена орг форма?:</b>\n"
+            f"<b>Заповнена орг форма?</b>\n"
             f"{org_passed_users_list}\n\n"
             f"<b>Тестове завдання</b> - {self.test_task_status[0]} ({self.test_task_status[1]})\n"
             f"<b>Команда бере участь в хакатоні</b> - {is_participate}"
