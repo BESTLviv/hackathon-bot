@@ -9,7 +9,7 @@ from ..data.user import Resume, User
 
 
 class FileDownloader:
-    MAX_SIZE = 50  # in MB
+    MAX_SIZE = 40  # in MB
     TEMP_FOLDER_PREFIX: str
 
     user_list: list  # List[User]
