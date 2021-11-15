@@ -12,6 +12,7 @@ from ..data import Data
 from ..data.user import User, Team
 from .section import Section
 from ..staff.sender import Sender, DestinationEnum
+from ..staff.filedownload import FileDownloader
 
 
 class AdminSection(Section):
@@ -42,6 +43,9 @@ class AdminSection(Section):
 
         elif action.split(":")[0] == "TeamListMenu":
             self.send_team_list_menu(user, call)
+
+        elif action == "DownloadAllCV":
+            self.download_cv(user, call)
 
         elif action.split(":")[0] == "ReviewTask":
             team_id = call.data.split(";")[2]
@@ -88,6 +92,13 @@ class AdminSection(Section):
         markup = self._form_team_info_menu_markup(team=team)
 
         self._send_menu(user, text, photo=None, markup=markup, call=call)
+
+    def download_cv(self, user: User, call: CallbackQuery = None):
+        users_with_cv = list(User.objects.filter(resume__ne=None))
+
+        file_downloader = FileDownloader(self.bot, users_with_cv, user)
+
+        file_downloader.download_user_resume_archive()
 
     def delete_team(
         self, user: User, team_id: str, confirmed=False, call: CallbackQuery = None
@@ -221,6 +232,12 @@ class AdminSection(Section):
             callback_data=self.form_admin_callback(action="TeamListMenu:1", edit=True),
         )
         markup.add(team_list_menu_btn)
+
+        download_all_cv_btn = InlineKeyboardButton(
+            text="Завантажити всі резюме",
+            callback_data=self.form_admin_callback(action="DownloadAllCV", edit=True),
+        )
+        markup.add(download_all_cv_btn)
 
         return markup
 

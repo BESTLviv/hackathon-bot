@@ -1,52 +1,84 @@
 from telebot.types import File
 from telebot import TeleBot
 
-import tempfile
+from tempfile import TemporaryDirectory
 import shutil
 import os
 
+from ..data.user import Resume, User
+
 
 class FileDownloader:
-    MAX_SIZE = 50
-    TEMP_FOLDER_PREFIX = "hack_bot_"
+    MAX_SIZE = 50  # in MB
+    TEMP_FOLDER_PREFIX: str
 
-    file_folders: dict  # Dict{"subfolder_name": [file_id, file_id]}
+    user_list: list  # List[User]
 
-    def __init__(self, bot: TeleBot, folders: dict):
+    def __init__(self, bot: TeleBot, user_list, admin: User, temp_prefix="hack_bot_"):
         self.bot = bot
+        self.admin = admin
 
-        self.file_folders = self._get_tg_files(folders)
+        self.user_list = user_list
+        self.TEMP_FOLDER_PREFIX = temp_prefix
 
-    @property
-    def _archive_chunks(self):
-        pass
+    def get_resume_chunks(self):
+        max_size_chunk = list()
+        current_size = 0
 
-    def download_archives(self):
-        with tempfile.TemporaryDirectory(
-            prefix=self.TEMP_FOLDER_PREFIX
-        ) as temp_dir_path:
-            for folder_name, file_list in self.file_folders.items():
-                self._create_subfolder(temp_dir_path, folder_name, file_list)
+        for user in self.user_list:
+            resume_size = user.resume.size_mb
+            if current_size + resume_size < self.MAX_SIZE:
+                current_size += resume_size
+                max_size_chunk.append(user)
+            else:
+                yield max_size_chunk
+                max_size_chunk = list()
+                current_size = 0
+                max_size_chunk.append(user)
 
-            archive_path = shutil.make_archive(f"CV_database", "zip", temp_dir_path)
+        yield max_size_chunk
 
-    def _create_subfolder(self, dir_path: str, folder_name: str, file_list: list):
-        folder_path = os.path.join(dir_path, folder_name)
-        os.mkdir(folder_path)
+    def download_user_resume_archive(self):
+        for index, chunk in enumerate(self.get_resume_chunks()):
+            temp_archive_path = self._get_temp_archive_path(chunk, index)
 
-        for tg_file in file_list:
-            downloaded_file = self.bot.download_file(tg_file.file_path)
-            downloaded_file_path = os.path.join(folder_path, tg_file.file_size)
-            with open(downloaded_file_path, "wb") as new_file:
+            # show sending document
+            self.bot.send_chat_action(self.admin.chat_id, action="upload_document")
+
+            # send archive
+            with open(temp_archive_path, "rb") as archive:
+                message = self.bot.send_document(self.admin.chat_id, archive)
+
+            # update db info
+            # ejf.cv_archive_file_id_list += [message.document.file_id]
+
+            # delete archive
+            os.remove(temp_archive_path)
+
+    def _get_temp_archive_path(self, user_chunk: "List[User]", chunk_index: int):
+        with TemporaryDirectory(prefix=self.TEMP_FOLDER_PREFIX) as temp_dir_path:
+
+            for user in user_chunk:
+                self._save_file_to_directory(user, temp_dir_path)
+
+            archive_path = shutil.make_archive(
+                f"CV_database_{chunk_index}", "zip", temp_dir_path
+            )
+            return archive_path
+
+    def _save_file_to_directory(self, user: User, dir_path: str):
+        resume: Resume = user.resume
+        downloaded_file = resume.download_file(self.bot)
+
+        # save file to temp directory
+        file_name = f"{user.team.name}__{user.username}__{resume.file_name}"
+        temp_file_path = os.path.join(dir_path, file_name)
+
+        try:
+            with open(temp_file_path, "wb") as new_file:
                 new_file.write(downloaded_file)
-
-    def _get_tg_files(self, file_id_folders: dict):
-        file_folders = dict()
-
-        for folder_name, file_id_list in file_id_folders.items():
-            file_folders[folder_name] = list()
-
-            for file_id in file_id_list:
-                file_folders[folder_name].append(self.bot.get_file(file_id))
-
-        return file_folders
+        except:
+            file_name = f"{user.username}__{resume.file_name}"
+            temp_file_path = os.path.join(dir_path, file_name)
+            with open(temp_file_path, "wb") as new_file:
+                new_file.write(downloaded_file)
