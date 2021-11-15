@@ -9,7 +9,8 @@ from ..data.user import Resume, User
 
 
 class FileDownloader:
-    MAX_SIZE = 40  # in MB
+    MAX_SIZE = 50  # in MB
+    MAXIMUM_FILE_SIZE = 5  # in MB
     TEMP_FOLDER_PREFIX: str
 
     user_list: list  # List[User]
@@ -28,6 +29,12 @@ class FileDownloader:
 
         for user in self.user_list:
             resume_size = user.resume.size_mb
+            if resume_size > self.MAXIMUM_FILE_SIZE:
+                print(
+                    f"[FileDownloader] User {user.name} {user.username} has invalid resume size {str(user.resume)}"
+                )
+                continue
+
             if current_size + resume_size < self.MAX_SIZE:
                 current_size += resume_size
                 max_size_chunk.append(user)
@@ -37,12 +44,6 @@ class FileDownloader:
                 yield max_size_chunk
                 max_size_chunk = list()
                 current_size = 0
-
-                if resume_size > self.MAX_SIZE:
-                    print(
-                        f"[FileDownloader] User {user.name}{user.username} has invalid resume size {str(user.resume)}"
-                    )
-                    continue
 
                 max_size_chunk.append(user)
                 current_size += resume_size
