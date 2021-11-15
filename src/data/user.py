@@ -20,6 +20,9 @@ class Resume(me.EmbeddedDocument):
         tg_file = self.get_tg_file(bot)
         return bot.download_file(tg_file.file_path)
 
+    def __str__(self):
+        return f"Resume(name={self.file_name}, size_mb={self.size_mb})"
+
 
 class Team(me.Document):
     name = me.StringField(required=True)
