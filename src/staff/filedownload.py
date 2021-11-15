@@ -24,6 +24,7 @@ class FileDownloader:
     def get_resume_chunks(self):
         max_size_chunk = list()
         current_size = 0
+        chunk_no = 0
 
         for user in self.user_list:
             resume_size = user.resume.size_mb
@@ -31,10 +32,20 @@ class FileDownloader:
                 current_size += resume_size
                 max_size_chunk.append(user)
             else:
+                chunk_no += 1
+                print(f"[FileDownloader] Chunk #{chunk_no} size = {current_size}")
                 yield max_size_chunk
                 max_size_chunk = list()
                 current_size = 0
+
+                if resume_size > self.MAX_SIZE:
+                    print(
+                        f"[FileDownloader] User {user.name}{user.username} has invalid resume size {str(user.resume)}"
+                    )
+                    continue
+
                 max_size_chunk.append(user)
+                current_size += resume_size
 
         yield max_size_chunk
 
