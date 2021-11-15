@@ -30,8 +30,10 @@ class FileDownloader:
         for user in self.user_list:
             resume_size = user.resume.size_mb
             if resume_size > self.MAXIMUM_FILE_SIZE:
-                print(
-                    f"[FileDownloader] User {user.name} {user.username} has invalid resume size {str(user.resume)}"
+                error_text = f"[FileDownloader] User {user.name} @{user.username} has invalid resume size {str(user.resume)}"
+                print(error_text)
+                self.bot.send_document(
+                    self.admin.chat_id, data=user.resume.file_id, caption=error_text
                 )
                 continue
 
