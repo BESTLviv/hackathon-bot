@@ -17,6 +17,7 @@ from time import sleep
 import re
 
 CANCEL_BUTTON_TEXT = "Скасувати"
+MAXIMUM_FILE_SIZE = 5 * 1024 ** 2
 
 
 class InputException(Exception):
@@ -187,6 +188,9 @@ def process_message(message: Message, **kwargs):
                 container[question.name] = message.photo[-1].file_id
 
             elif content_type == "document":
+                if message.document.file_size >= MAXIMUM_FILE_SIZE:
+                    raise InputException
+
                 container["file_id"] = message.document.file_id
                 container["file_name"] = message.document.file_name
                 container["file_size"] = message.document.file_size
