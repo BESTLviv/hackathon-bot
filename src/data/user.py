@@ -1,4 +1,5 @@
-from datetime import datetime, timezone
+from telebot import TeleBot
+from telebot.types import File
 
 import mongoengine as me
 
@@ -7,6 +8,17 @@ class Resume(me.EmbeddedDocument):
     file_id = me.StringField(required=True)
     file_name = me.StringField(required=True)
     file_size = me.IntField(required=True)
+
+    @property
+    def size_mb(self):
+        return self.file_size * 10 ** -6
+
+    def get_tg_file(self, bot: TeleBot) -> File:
+        return bot.get_file(self.file_id)
+
+    def download_file(self, bot: TeleBot):
+        tg_file = self.get_tg_file(bot)
+        return bot.download_file(tg_file.file_path)
 
 
 class Team(me.Document):
@@ -91,7 +103,7 @@ class User(me.Document):
     name = me.StringField(default=None)
     surname = me.StringField(default=None)
     username = me.StringField(default=None)
-    resume = me.EmbeddedDocumentField(Resume, default=None)
+    resume: Resume = me.EmbeddedDocumentField(Resume, default=None)
     additional_info = me.DictField(default=None)
     org_questions = me.DictField(default=None)  # like size of T-shirt or post index
     team: Team = me.ReferenceField(Team, required=False)
