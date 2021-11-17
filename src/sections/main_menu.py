@@ -6,6 +6,9 @@ from telebot.types import (
     InlineKeyboardButton,
     InlineKeyboardMarkup,
 )
+
+from src.data.user import Team
+from src.sections.team_menu import TeamMenu
 from ..data import User, Data, Hackathon
 from ..data.hackathon import ReplyButton
 from ..sections.section import Section
@@ -20,6 +23,7 @@ class MainMenuSection(Section):
     def special_buttons(self):
         return {
             "time_till_start": self._b_registration_start,
+            "need_help": self._b_team_need_help,
         }
 
     def send_start_menu(self, user: User):
@@ -48,6 +52,31 @@ class MainMenuSection(Section):
         )
 
         start_starting_quiz(user=user, bot=self.bot, final_func=self.send_start_menu)
+
+    def _b_team_need_help(self, user: User):
+        admin_team: Team = Team.objects.filter(name="BEST::Hackath0n").first()
+
+        if user.team is None:
+            return
+
+        if admin_team is None:
+            return
+
+        text = f"Команда потребує допомоги!"
+        markup = InlineKeyboardMarkup()
+        btn = InlineKeyboardButton(
+            text=user.team.name,
+            callback_data=self.form_admin_callback(
+                action="TeamInfoMenu", team_id=user.team.id, new=True
+            ),
+        )
+        markup.add(btn)
+        for admin in admin_team.members:
+            self.bot.send_message(admin.chat_id, text=text, reply_markup=markup)
+
+        self.bot.send_message(
+            user.chat_id, text="Зараз з вами зв'яжуться адміністратори!"
+        )
 
     #################
     ## Informative
