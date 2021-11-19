@@ -103,6 +103,11 @@ class TeamMenu(Section):
                 back_step(user)
                 return
 
+        if self.data.hackathon.current_menu != self.data.hackathon.p_selection_menu:
+            self.bot.answer_callback_query(call.id, text="Нажаль, вже запізно :(")
+            return
+
+
         text = "Надішли мені посилання на гіт репозиторій."
         markup = self.create_cancel_markup()
 
@@ -127,9 +132,7 @@ class TeamMenu(Section):
             return
 
         if self.data.hackathon.current_menu != self.data.hackathon.p_registration_menu:
-            self.bot.send_message(
-                user.chat_id, f"Реєстрація вже закінчилась."
-            )
+            self.bot.send_message(user.chat_id, f"Реєстрація вже закінчилась.")
             return
 
         quiz.start_quiz(
@@ -252,7 +255,8 @@ class TeamMenu(Section):
             else:
                 markup.add(login_team_btn)
         else:
-            markup.add(test_task_btn)
+            if self.data.hackathon.current_menu == self.data.hackathon.p_selection_menu:
+                markup.add(test_task_btn)
             markup.add(cv_btn)
             markup.add(org_quiz_btn)
             markup.add(logout_team_btn)
