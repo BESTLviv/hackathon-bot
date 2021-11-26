@@ -22,7 +22,7 @@ class MainMenuSection(Section):
     @property
     def special_buttons(self):
         return {
-            "time_till_start": self._b_registration_start,
+            "time_left": self._b_time_left,
             "need_help": self._b_team_need_help,
         }
 
@@ -53,8 +53,8 @@ class MainMenuSection(Section):
 
         start_starting_quiz(user=user, bot=self.bot, final_func=self.send_start_menu)
 
-    def _b_team_need_help(self, user: User):
-        admin_team: Team = Team.objects.filter(name="BEST::Hackath0n").first()
+    def _b_team_need_help(self, user: User, button: ReplyButton):
+        admin_team: Team = self.data.admin_team
 
         if user.team is None:
             return
@@ -82,13 +82,24 @@ class MainMenuSection(Section):
     ## Informative
     #################
 
-    def _b_registration_start(self, user: User, button: ReplyButton):
-        self.bot.send_message(
-            chat_id=user.chat_id,
-            text=button.text.format(
-                date=self.data.hackathon.p_registration_menu.start_date
-            ),
-        )
+    def _b_time_left(self, user: User, button: ReplyButton):
+        time_left = self.data.hackathon.time_left
+
+        if time_left is None:
+            msg_text = "Хакатоно ще не розпочався"
+
+        elif time_left.days < 0:
+            msg_text = "Хакатон закінчено!"
+
+        else:
+            hours = int(time_left.seconds / 3600)
+            minutes = int(time_left.seconds % 3600 / 60)
+            seconds = time_left.seconds % 60
+            msg_text = (
+                f"До кінця хакатону залишилось <b>{hours}год {minutes}хв {seconds}с</b>"
+            )
+
+        self.bot.send_message(chat_id=user.chat_id, text=msg_text)
 
     #################
     ## Registration

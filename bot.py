@@ -1,6 +1,8 @@
 import configparser
 import os
 
+from telebot.types import Message
+
 from src.data import Data, User
 from src.sections.admin import AdminSection
 

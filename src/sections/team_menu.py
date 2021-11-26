@@ -107,7 +107,6 @@ class TeamMenu(Section):
             self.bot.answer_callback_query(call.id, text="Нажаль, вже запізно :(")
             return
 
-
         text = "Надішли мені посилання на гіт репозиторій."
         markup = self.create_cancel_markup()
 
@@ -258,7 +257,7 @@ class TeamMenu(Section):
             if self.data.hackathon.current_menu == self.data.hackathon.p_selection_menu:
                 markup.add(test_task_btn)
             markup.add(cv_btn)
-            markup.add(org_quiz_btn)
+            # markup.add(org_quiz_btn)
             markup.add(logout_team_btn)
 
         return markup

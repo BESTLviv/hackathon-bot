@@ -1,4 +1,5 @@
-from datetime import date
+from datetime import date, datetime, timedelta
+from typing import Union
 
 import mongoengine as me
 from telebot import TeleBot
@@ -130,6 +131,7 @@ class Hackathon(me.Document):
     start_photo = me.StringField(default=None)
 
     current_menu: HackathonMenu = me.ReferenceField(HackathonMenu)
+    project_start_datetime: datetime = me.DateTimeField(default=None)
 
     def __init__(self, *args, **values):
         super().__init__(*args, **values)
@@ -166,6 +168,22 @@ class Hackathon(me.Document):
     @property
     def p_after_project_menu(self) -> HackathonMenu:
         return HackathonMenu.objects.filter(name="after_project").first()
+
+    @property
+    def time_left(self) -> Union[timedelta, None]:
+        if self.project_start_datetime is None:
+            return None
+
+        expected_end_time = self.project_start_datetime + timedelta(days=1)
+        return expected_end_time - datetime.now()
+
+    @property
+    def is_ongoing(self) -> bool:
+        if self.project_start_datetime is None:
+            return False
+
+        expected_end_time = self.project_start_datetime + timedelta(days=1)
+        return expected_end_time > datetime.now()
 
     def switch_to_next_menu(self):
         current_index = self.MENU_LIST.index(self.current_menu)

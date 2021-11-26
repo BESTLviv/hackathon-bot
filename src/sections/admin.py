@@ -1,3 +1,4 @@
+from datetime import datetime
 from telebot.types import (
     InlineKeyboardButton,
     InlineKeyboardMarkup,
@@ -58,6 +59,12 @@ class AdminSection(Section):
         elif action == "DeleteTeam":
             team_id = call.data.split(";")[2]
             self.delete_team(user, team_id, call=call)
+
+        elif action == "StartHack":
+            self.start_hack(user, call=call)
+
+        elif action == "EndHack":
+            self.end_hack(user, call=call)
 
         self.bot.answer_callback_query(call.id)
 
@@ -180,6 +187,49 @@ class AdminSection(Section):
 
         self.send_team_info_menu(user, call)
 
+    def start_hack(self, user: User, call: CallbackQuery):
+        if self.data.hackathon.is_ongoing:
+            self.bot.send_message(user.chat_id, text="Хакатон вже триває.")
+            return
+
+        users = User.objects.filter(team__ne=None)
+        participants = list(filter(lambda user: user.is_participant, users))
+
+        self.data.hackathon.current_menu = self.data.hackathon.p_project_menu
+
+        counter = 0
+        for p in participants:
+            try:
+                self.data.hackathon.current_menu.send_menu(self.bot, p)
+                counter += 1
+            except Exception as e:
+                print(f"[Admin] ERROR while menu update for {p.username} - {e}")
+        print(f"Updated - {counter}/{len(participants)}")
+
+        self.data.hackathon.project_start_datetime = datetime.now()
+        self.data.hackathon.save()
+
+    def end_hack(self, user: User, call: CallbackQuery):
+        if self.data.hackathon.project_start_datetime is None:
+            self.bot.send_message(user.chat_id, text="Хакатон вже закінчився.")
+            return
+
+        users = User.objects.filter(team__ne=None)
+        participants = list(filter(lambda user: user.is_participant, users))
+
+        counter = 0
+        for p in participants:
+            try:
+                self.bot.send_message(
+                    p.chat_id, text="Час закінчився - Хакатон завершився!"
+                )
+                counter += 1
+            except Exception as e:
+                print(f"[Updater] ERROR while finishing hack for {p.username} - {e}")
+        print(f"Hack finished for {counter}/{len(participants)}")
+        self.data.hackathon.project_start_datetime
+        self.data.hackathon.save()
+
     def _send_menu(
         self,
         user: User,
@@ -228,6 +278,16 @@ class AdminSection(Section):
             callback_data=self.form_admin_callback(action="DownloadAllCV", edit=True),
         )
         markup.add(download_all_cv_btn)
+
+        start_hack_btn = InlineKeyboardButton(
+            text="Розпочати хакатон",
+            callback_data=self.form_admin_callback(action="StartHack", edit=True),
+        )
+        end_hack_btn = InlineKeyboardButton(
+            text="Завершити хакатон",
+            callback_data=self.form_admin_callback(action="EndHack", edit=True),
+        )
+        markup.add(start_hack_btn, end_hack_btn)
 
         return markup
 

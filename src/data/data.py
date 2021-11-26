@@ -7,6 +7,8 @@ from datetime import datetime, timezone, date
 import string
 import random
 
+from src.data.user import Team
+
 
 from .quiz import Question, Quiz
 from ..data import hackathon as hack_db
@@ -45,6 +47,10 @@ class Data:
     @property
     def org_questions_quiz(self) -> Quiz:
         return Quiz.objects.filter(name="OrqQuestionsQuiz").first()
+
+    @property
+    def admin_team(self) -> Team:
+        return Team.objects.filter(name="BEST::Hackath0n").first()
 
     def create_system_tables(self):
         self._create_quizes()
