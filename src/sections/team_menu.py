@@ -75,13 +75,17 @@ class TeamMenu(Section):
                 text = message.text
                 if text.startswith("https://"):
                     task_link = text.split(" ")[0]
-                    user.update_test_task(task_link)
+                    user.update_github_repo(task_link)
 
-                    self.bot.send_message(user.chat_id, text="Дякую!")
+                    self.bot.send_message(
+                        user.chat_id, text="Дякую!", reply_markup=ReplyKeyboardRemove()
+                    )
+                    self.data.hackathon.current_menu.send_menu(self.bot, user)
                     return
 
                 elif text == self.CANCEL_BUTTON_TEXT:
                     self.bot.send_message(user.chat_id, text="Скасовано!")
+                    self.data.hackathon.current_menu.send_menu(self.bot, user)
                     return
 
                 else:
