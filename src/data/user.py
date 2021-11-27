@@ -31,6 +31,7 @@ class Team(me.Document):
     registration_datetime = me.DateTimeField(required=True)
     test_task = me.StringField(required=False)
     test_task_passed = me.BooleanField(default=None)
+    github_repo = me.StringField(default=None)
     is_active = me.BooleanField(default=False)
 
     members: list
@@ -87,6 +88,8 @@ class Team(me.Document):
 
         is_participate = "✅" if self.test_task_passed else "❌"
 
+        is_github_repo = self.github_repo if self.github_repo else "Не здано ❌"
+
         team_name = str(self.name).replace("<", "*").replace(">", "*")
         return (
             f"Команда <b>{team_name}</b>\n\n"
@@ -96,6 +99,8 @@ class Team(me.Document):
             f"{cv_list}\n\n"
             f"<b>Заповнена орг форма?</b>\n"
             f"{org_passed_users_list}\n\n"
+            f"<b>Гітхаб?</b>\n"
+            f"{is_github_repo}\n\n"
             f"<b>Тестове завдання</b> - {self.test_task_status[0]} ({self.test_task_status[1]})\n"
             f"<b>Команда бере участь в хакатоні</b> - {is_participate}"
         )
@@ -131,6 +136,10 @@ class User(me.Document):
 
     def update_test_task(self, link: str):
         self.team.test_task = link
+        self.team.save()
+
+    def update_github_repo(self, link: str):
+        self.team.github_repo = link
         self.team.save()
 
     def update_resume(self, user, container):

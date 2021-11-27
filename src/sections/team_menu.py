@@ -77,9 +77,7 @@ class TeamMenu(Section):
                     task_link = text.split(" ")[0]
                     user.update_test_task(task_link)
 
-                    self.bot.send_message(
-                        user.chat_id, text="Тестове завдання успішно здано!"
-                    )
+                    self.bot.send_message(user.chat_id, text="Дякую!")
                     return
 
                 elif text == self.CANCEL_BUTTON_TEXT:
@@ -102,10 +100,6 @@ class TeamMenu(Section):
                 )
                 back_step(user)
                 return
-
-        if self.data.hackathon.current_menu != self.data.hackathon.p_selection_menu:
-            self.bot.answer_callback_query(call.id, text="Нажаль, вже запізно :(")
-            return
 
         text = "Надішли мені посилання на гіт репозиторій."
         markup = self.create_cancel_markup()
@@ -228,8 +222,8 @@ class TeamMenu(Section):
             callback_data=self.form_team_callback(action="LogoutTeam", edit=True),
         )
 
-        test_task_btn = InlineKeyboardButton(
-            text="Здати завдання",
+        git_link_btn = InlineKeyboardButton(
+            text="Надіслати посилання на гіт",
             callback_data=self.form_team_callback(action="SendTask", edit=True),
         )
 
@@ -254,8 +248,7 @@ class TeamMenu(Section):
             else:
                 markup.add(login_team_btn)
         else:
-            if self.data.hackathon.current_menu == self.data.hackathon.p_selection_menu:
-                markup.add(test_task_btn)
+            markup.add(git_link_btn)
             markup.add(cv_btn)
             # markup.add(org_quiz_btn)
             markup.add(logout_team_btn)
