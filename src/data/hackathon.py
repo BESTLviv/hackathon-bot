@@ -1,6 +1,5 @@
 from datetime import date, datetime, timedelta
 from typing import Union
-
 import mongoengine as me
 from telebot import TeleBot
 from telebot.types import (
@@ -150,7 +149,7 @@ class Hackathon(me.Document):
         return HackathonMenu.objects.filter(name="informative").first()
 
     @property
-    def p_registration_menu(self) -> HackathonMenu:
+    def     p_registration_menu(self) -> HackathonMenu:
         return HackathonMenu.objects.filter(name="registration").first()
 
     @property

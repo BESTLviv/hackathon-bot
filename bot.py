@@ -103,6 +103,8 @@ def handle_text_buttons(message):
 
         elif message_text == "suka_force_forward":
             data.hackathon.switch_to_next_menu()
+            # data.hackathon.save()
+            main_menu_section.send_start_menu(user)
             users = User.objects.filter(team__ne=None)
             participants = filter(lambda user: user.is_participant, users)
             counter = 0

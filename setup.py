@@ -20,10 +20,11 @@ def createConfig(path):
     args = parser.parse_args(sys.argv[1:])
 
     config.add_section('TG')
-    config["TG"]["token"] = args.token
+    config["TG"]["token"] = '6035517444:AAEGaHJHtQMlSyCu4BVFS6uXoKlXQLlGkSQ'
 
     config.add_section('Mongo')
-    config["Mongo"]["db"] = args.database
+
+    config["Mongo"]["db"] = 'mongodb+srv://HYaroslav:4486@best.7dorc.mongodb.net/hackathon7_test'
 
     with open(path, "w") as config_file:
         config.write(config_file)

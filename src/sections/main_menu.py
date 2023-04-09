@@ -24,6 +24,7 @@ class MainMenuSection(Section):
         return {
             "time_left": self._b_time_left,
             "need_help": self._b_team_need_help,
+            "time_till_start": self._b_registration_start,
         }
 
     def send_start_menu(self, user: User):
@@ -78,6 +79,7 @@ class MainMenuSection(Section):
             user.chat_id, text="Зараз з вами зв'яжуться адміністратори!"
         )
 
+
     #################
     ## Informative
     #################
@@ -101,6 +103,13 @@ class MainMenuSection(Section):
 
         self.bot.send_message(chat_id=user.chat_id, text=msg_text)
 
-    #################
-    ## Registration
-    #################
+        #################
+        ## Registration
+        #################
+    def _b_registration_start(self, user: User, button: ReplyButton):
+        self.bot.send_message(
+            chat_id=user.chat_id,
+            text=button.text.format(
+                date=self.data.hackathon.p_registration_menu.start_date
+            ),
+        )
