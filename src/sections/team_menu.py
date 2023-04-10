@@ -18,7 +18,7 @@ from ..staff import quiz, utils
 
 class TeamMenu(Section):
 
-    MENU_PHOTO: str = "https://i.ibb.co/SxkcpyG/Desktop88-5.png"
+    MENU_PHOTO: str = "https://i.ibb.co/zFmfFVC/Frame-56.jpg"
 
     def __init__(self, data: Data):
         super().__init__(data)
