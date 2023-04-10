@@ -72,55 +72,55 @@ def handle_text_buttons(message):
             else:
                 main_menu_section.process_button(user, message_text)
 
-        elif message_text == "__next_menu":
-            data.hackathon.switch_to_next_menu()
-            main_menu_section.send_start_menu(user)
+        # elif message_text == "__next_menu":
+        #     data.hackathon.switch_to_next_menu()
+        #     main_menu_section.send_start_menu(user)
 
-        elif message_text == "NakedNestor":
+        elif message_text == "FallingBodya":
             admin_section.send_admin_menu(user)
 
-        elif message_text == "SilentUpdate":
-            updater.update_menu_from_db()
+        # elif message_text == "SilentUpdate":
+        #     updater.update_menu_from_db()
 
         # TEMP!!!
-        elif message_text == "suka_force_back":
-            registered_users = User.objects.filter(is_blocked=False)
-
-            # data.hackathon.current_menu = data.hackathon.p_registration_menu
-            data.hackathon.switch_to_prev_menu()
-            # data.hackathon.save()
-
-            counter = 0
-            for user in registered_users:
-                try:
-                    data.hackathon.current_menu.send_menu(bot, user)
-                    counter += 1
-                except Exception as e:
-                    print(
-                        f"[Updater] ERROR while menu update for {user.username} - {e}"
-                    )
-
-            print(f"Updated - {counter}/{len(registered_users)}")
-
-        elif message_text == "suka_force_forward":
-            data.hackathon.switch_to_next_menu()
-            # data.hackathon.save()
-            main_menu_section.send_start_menu(user)
-            # users = User.objects.filter(team__ne=None)
-            users = User.objects.filter(is_blocked=False)
-
-            # participants = filter(lambda user: user.is_participant, users)
-            counter = 0
-            for u in users:
-                try:
-                    data.hackathon.current_menu.send_menu(bot, u)
-                    counter += 1
-                except Exception as e:
-                    print(
-                        f"[Updater] ERROR while menu update for {user.username} - {e}"
-                    )
-
-            print(f"Updated - {counter}/{len(users)}")
+        # elif message_text == "suka_force_back":
+        #     registered_users = User.objects.filter(is_blocked=False)
+        #
+        #     # data.hackathon.current_menu = data.hackathon.p_registration_menu
+        #     data.hackathon.switch_to_prev_menu()
+        #     # data.hackathon.save()
+        #
+        #     counter = 0
+        #     for user in registered_users:
+        #         try:
+        #             data.hackathon.current_menu.send_menu(bot, user)
+        #             counter += 1
+        #         except Exception as e:
+        #             print(
+        #                 f"[Updater] ERROR while menu update for {user.username} - {e}"
+        #             )
+        #
+        #     print(f"Updated - {counter}/{len(registered_users)}")
+        #
+        # elif message_text == "suka_force_forward":
+        #     data.hackathon.switch_to_next_menu()
+        #     # data.hackathon.save()
+        #     main_menu_section.send_start_menu(user)
+        #     # users = User.objects.filter(team__ne=None)
+        #     users = User.objects.filter(is_blocked=False)
+        #
+        #     # participants = filter(lambda user: user.is_participant, users)
+        #     counter = 0
+        #     for u in users:
+        #         try:
+        #             data.hackathon.current_menu.send_menu(bot, u)
+        #             counter += 1
+        #         except Exception as e:
+        #             print(
+        #                 f"[Updater] ERROR while menu update for {user.username} - {e}"
+        #             )
+        #
+        #     print(f"Updated - {counter}/{len(users)}")
 
     except Exception as e:
         print(e)
