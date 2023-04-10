@@ -23,6 +23,7 @@ import os
 
 from telebot import TeleBot, logger
 
+from src.staff.updates import Updater
 
 config = configparser.ConfigParser()
 config.read("Settings.ini")
@@ -42,6 +43,7 @@ CONNECTION_STRING = (
 
 bot = TeleBot(API_TOKEN, parse_mode="HTML")
 data = Data(conn_string=CONNECTION_STRING, bot=bot)
+updater = Updater(data=data)
 class AdminSection(Section):
 
     MENU_PHOTO: str = ""
@@ -97,7 +99,8 @@ class AdminSection(Section):
 
         elif action == "Back":
             self.back()
-
+        elif action == "Update":
+            self.update()
         self.bot.answer_callback_query(call.id)
 
     def send_admin_menu(self, user: User, call: CallbackQuery = None):
@@ -300,6 +303,8 @@ class AdminSection(Section):
                 )
 
         print(f"Updated - {counter}/{len(users)}")
+    def update(self):
+        updater.update_menu_from_db()
 
     def back(self):
         registered_users = User.objects.filter(is_blocked=False)
@@ -380,11 +385,17 @@ class AdminSection(Section):
         markup.add(start_hack_btn, end_hack_btn)
         forward_hack_btn = InlineKeyboardButton(
             text="suka Forward",
-            callback_data=self.form_admin_callback(action="Forward", delete=True),
+            callback_data=self.form_admin_callback(action="Forward", delete=False),
         )
         back_hack_btn = InlineKeyboardButton(
             text="suka Back",
-            callback_data=self.form_admin_callback(action="Back", delete=True),
+            callback_data=self.form_admin_callback(action="Back", delete=False),
+        )
+        markup.add(back_hack_btn, forward_hack_btn)
+
+        back_hack_btn = InlineKeyboardButton(
+            text="Update DB",
+            callback_data=self.form_admin_callback(action="Update", delete=False),
         )
         markup.add(back_hack_btn, forward_hack_btn)
 
