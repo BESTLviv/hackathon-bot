@@ -254,7 +254,7 @@ class TeamMenu(Section):
         else:
             markup.add(git_link_btn)
             markup.add(cv_btn)
-            # markup.add(org_quiz_btn)
+            markup.add(org_quiz_btn)
             markup.add(logout_team_btn)
 
         return markup

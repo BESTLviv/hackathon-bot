@@ -197,6 +197,18 @@ class Hackathon(me.Document):
         self.save()
         print(f"Menu switched to {self.current_menu.name}")
 
+    def switch_to_prev_menu(self):
+        current_index = self.MENU_LIST.index(self.current_menu)
+        next_index = current_index - 1
+
+        if next_index == len(self.MENU_LIST):
+            # return
+            print("Знову найперше меню")
+            next_index = 0
+
+        self.current_menu = self.MENU_LIST[next_index]
+        self.save()
+        print(f"Menu switched to {self.current_menu.name}")
     def silent_refresh_menu_data(self):
         updated_menu = self.current_menu.update_from_db()
 

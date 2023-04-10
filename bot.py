@@ -86,8 +86,9 @@ def handle_text_buttons(message):
         elif message_text == "suka_force_back":
             registered_users = User.objects.filter(is_blocked=False)
 
-            data.hackathon.current_menu = data.hackathon.p_registration_menu
-            data.hackathon.save()
+            # data.hackathon.current_menu = data.hackathon.p_registration_menu
+            data.hackathon.switch_to_prev_menu()
+            # data.hackathon.save()
 
             counter = 0
             for user in registered_users:
