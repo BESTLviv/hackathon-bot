@@ -105,10 +105,12 @@ def handle_text_buttons(message):
             data.hackathon.switch_to_next_menu()
             # data.hackathon.save()
             main_menu_section.send_start_menu(user)
-            users = User.objects.filter(team__ne=None)
-            participants = filter(lambda user: user.is_participant, users)
+            # users = User.objects.filter(team__ne=None)
+            users = User.objects.filter(is_blocked=False)
+
+            # participants = filter(lambda user: user.is_participant, users)
             counter = 0
-            for u in participants:
+            for u in users:
                 try:
                     data.hackathon.current_menu.send_menu(bot, u)
                     counter += 1
