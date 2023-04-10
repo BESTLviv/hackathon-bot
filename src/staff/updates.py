@@ -89,7 +89,7 @@ class Updater:
 
                 self._update_blocked_users()
                 self._update_active_users_info()
-                self._update_current_menu()
+                # self._update_current_menu() TODO: auto update every day
 
                 print(
                     f"[Updater] Everyday updates have been finished. "
