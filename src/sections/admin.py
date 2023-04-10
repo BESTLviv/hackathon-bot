@@ -391,7 +391,7 @@ class AdminSection(Section):
             text="suka Back",
             callback_data=self.form_admin_callback(action="Back", delete=True),
         )
-        markup.add(back_hack_btn)
+        markup.add(back_hack_btn, forward_hack_btn)
 
         update_hack_btn = InlineKeyboardButton(
             text="Update DB",
