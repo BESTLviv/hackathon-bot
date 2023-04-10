@@ -16,6 +16,32 @@ from ..staff.sender import Sender, DestinationEnum
 from ..staff.filedownload import FileDownloader
 
 
+from src.data import Data, User
+import configparser
+import os
+
+
+from telebot import TeleBot, logger
+
+
+config = configparser.ConfigParser()
+config.read("Settings.ini")
+
+
+API_TOKEN = (
+    os.environ.get("TOKEN", False)
+    if os.environ.get("TOKEN", False)
+    else config["TG"]["token"]
+)
+
+CONNECTION_STRING = (
+    os.environ.get("DB", False)
+    if os.environ.get("DB", False)
+    else config["Mongo"]["db"]
+)
+
+bot = TeleBot(API_TOKEN, parse_mode="HTML")
+data = Data(conn_string=CONNECTION_STRING, bot=bot)
 class AdminSection(Section):
 
     MENU_PHOTO: str = ""
@@ -65,6 +91,12 @@ class AdminSection(Section):
 
         elif action == "EndHack":
             self.end_hack(user, call=call)
+
+        elif action == "Forward":
+            self.forward(user, call=call)
+
+        elif action == "Back":
+            self.back(user, call=call)
 
         self.bot.answer_callback_query(call.id)
 
@@ -230,6 +262,64 @@ class AdminSection(Section):
         self.data.hackathon.project_start_datetime
         self.data.hackathon.save()
 
+    def forward(self):
+        registered_users = User.objects.filter(is_blocked=False)
+
+        # data.hackathon.current_menu = data.hackathon.p_registration_menu
+        data.hackathon.switch_to_prev_menu()
+        # data.hackathon.save()
+
+        counter = 0
+        for user in registered_users:
+            try:
+                data.hackathon.current_menu.send_menu(bot, user)
+                counter += 1
+            except Exception as e:
+                print(
+                    f"[Updater] ERROR while menu update for {user.username} - {e}"
+                )
+
+        print(f"Updated - {counter}/{len(registered_users)}")
+
+    def forward(self):
+        data.hackathon.switch_to_next_menu()
+        # data.hackathon.save()
+        # main_menu_section.send_start_menu(user)
+        # users = User.objects.filter(team__ne=None)
+        users = User.objects.filter(is_blocked=False)
+
+        # participants = filter(lambda user: user.is_participant, users)
+        counter = 0
+        for u in users:
+            try:
+                data.hackathon.current_menu.send_menu(bot, u)
+                counter += 1
+            except Exception as e:
+                print(
+                    f"[Updater] ERROR while menu update for {user.username} - {e}"
+                )
+
+        print(f"Updated - {counter}/{len(users)}")
+
+    def back(self):
+        registered_users = User.objects.filter(is_blocked=False)
+
+        # data.hackathon.current_menu = data.hackathon.p_registration_menu
+        data.hackathon.switch_to_prev_menu()
+        # data.hackathon.save()
+
+        counter = 0
+        for user in registered_users:
+            try:
+                data.hackathon.current_menu.send_menu(bot, user)
+                counter += 1
+            except Exception as e:
+                print(
+                    f"[Updater] ERROR while menu update for {user.username} - {e}"
+                )
+
+        print(f"Updated - {counter}/{len(registered_users)}")
+
     def _send_menu(
         self,
         user: User,
@@ -288,6 +378,15 @@ class AdminSection(Section):
             callback_data=self.form_admin_callback(action="EndHack", edit=True),
         )
         markup.add(start_hack_btn, end_hack_btn)
+        forward_hack_btn = InlineKeyboardButton(
+            text="suka Forward",
+            callback_data=self.form_admin_callback(action="Forward", edit=True),
+        )
+        back_hack_btn = InlineKeyboardButton(
+            text="suka Back",
+            callback_data=self.form_admin_callback(action="Back", edit=True),
+        )
+        markup.add(back_hack_btn, forward_hack_btn)
 
         return markup
 
