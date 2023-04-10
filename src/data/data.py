@@ -131,6 +131,25 @@ class Data:
             correct_answer_message="Те що треба!",
             wrong_answer_message="Відповідь треба записувати текстом",
         )
+        q_source = Question(
+            name="registration_source",
+            message="Звідки дізнався про Hackathon?",
+            allow_user_input=True,
+            correct_answer_message="Дякую за відповідь, для мене це дуже користно)",
+            wrong_answer_message="Відповідь треба записувати текстом",
+        )
+        q_work = Question(
+            name="work_info",
+            message="Вже працюєш в айті сфері?",
+            buttons=[
+                "Taк",
+                "Ні",
+                "Планую",
+            ],
+            allow_user_input=False,
+            correct_answer_message="Дякую за інформацію)",
+            wrong_answer_message="Відповідь треба записувати текстом",
+        )
 
         ##############
         q_city = Question(
@@ -172,6 +191,8 @@ class Data:
             q_study_term,
             # q_city,
             q_tech,
+            q_source,
+            q_work,
             q_contact,
             q_email,
             q_agree,
