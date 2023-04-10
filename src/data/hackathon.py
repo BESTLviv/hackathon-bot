@@ -249,7 +249,7 @@ def add_test_data():
         start_date=date(2021, 10, 10),
         end_date=date(2021, 11, 12),
         menu_buttons=[
-            ReplyButton(name="Інформація про команду", special_action="team_info"),
+            ReplyButton(name="Інфо та правила хакатону", special_action="team_info"),
             ReplyButton(name="Правила хакатону"),
             ReplyButton(name="Розклад"),
             ReplyButton(name="Чат для людей без команди"),
