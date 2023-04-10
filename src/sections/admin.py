@@ -385,17 +385,17 @@ class AdminSection(Section):
         markup.add(start_hack_btn, end_hack_btn)
         forward_hack_btn = InlineKeyboardButton(
             text="suka Forward",
-            callback_data=self.form_admin_callback(action="Forward", delete=False),
+            callback_data=self.form_admin_callback(action="Forward", delete=True),
         )
         back_hack_btn = InlineKeyboardButton(
             text="suka Back",
-            callback_data=self.form_admin_callback(action="Back", delete=False),
+            callback_data=self.form_admin_callback(action="Back", delete=True),
         )
-        markup.add(back_hack_btn, forward_hack_btn)
+        markup.add(back_hack_btn)
 
         update_hack_btn = InlineKeyboardButton(
             text="Update DB",
-            callback_data=self.form_admin_callback(action="Update", delete=False),
+            callback_data=self.form_admin_callback(action="Update", delete=True),
         )
         markup.add(update_hack_btn)
 
