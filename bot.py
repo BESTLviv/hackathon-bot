@@ -76,7 +76,7 @@ def handle_text_buttons(message):
         #     data.hackathon.switch_to_next_menu()
         #     main_menu_section.send_start_menu(user)
 
-        elif message_text == "FallingBodya":
+        elif message_text == os.environ.get("ADMIN_PASSWORD", False):
             admin_section.send_admin_menu(user)
 
         # elif message_text == "SilentUpdate":
