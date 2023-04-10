@@ -393,11 +393,11 @@ class AdminSection(Section):
         )
         markup.add(back_hack_btn, forward_hack_btn)
 
-        back_hack_btn = InlineKeyboardButton(
+        update_hack_btn = InlineKeyboardButton(
             text="Update DB",
             callback_data=self.form_admin_callback(action="Update", delete=False),
         )
-        markup.add(back_hack_btn, forward_hack_btn)
+        markup.add(update_hack_btn)
 
         return markup
 
