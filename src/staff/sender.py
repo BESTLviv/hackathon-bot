@@ -68,7 +68,7 @@ class CustomMessage:
         if self.content_type == "photo":
             bot.send_photo(
                 user.chat_id,
-                photo=self.photo,
+                photo=self.photo[0].file_id,
                 caption=self.text,
                 reply_markup=self.markup,
             )
