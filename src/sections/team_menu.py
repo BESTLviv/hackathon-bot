@@ -248,7 +248,7 @@ class TeamMenu(Section):
                 self.data.hackathon.current_menu
                 == self.data.hackathon.p_registration_menu
             ):
-                markup.add(register_team_btn, login_team_btn)
+                markup.add(login_team_btn)
             else:
                 markup.add(login_team_btn)
         else:
