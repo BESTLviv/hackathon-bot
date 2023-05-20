@@ -544,8 +544,8 @@ class AdminSection(Section):
             ),
         )
 
-        markup.add(approve_btn, reject_btn, approve_AVAL_btn, reject_UNAVAL_btn)
-
+        markup.add(approve_btn, reject_btn)
+        markup.add(approve_AVAL_btn, reject_UNAVAL_btn)
         delete_team_btn = InlineKeyboardButton(
             text="Видалити команду",
             callback_data=self.form_admin_callback(
