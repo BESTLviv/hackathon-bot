@@ -29,7 +29,7 @@ class Team(me.Document):
     password = me.StringField(required=True)
     photo = me.StringField()
     registration_datetime = me.DateTimeField(required=True)
-    test_task = me.StringField(required=False)
+    test_task = me.BooleanField(default=None)
     test_task_passed = me.BooleanField(default=None)
     github_repo = me.StringField(default=None)
     is_active = me.BooleanField(default=False)
