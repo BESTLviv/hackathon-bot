@@ -214,7 +214,7 @@ class AdminSection(Section):
 
         receivers_count = 0
         for member in team.members:
-            self.bot.send_photo(member.chat_id)
+            self.bot.send_message(member.chat_id, admin_text)
             receivers_count += 1
 
         self.bot.send_message(
@@ -241,7 +241,7 @@ class AdminSection(Section):
 
         receivers_count = 0
         for member in team.members:
-            self.bot.send_photo(member.chat_id)
+            self.bot.send_message(member.chat_id, admin_text)
             receivers_count += 1
 
         self.bot.send_message(
