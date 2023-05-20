@@ -49,11 +49,11 @@ class Team(me.Document):
 
     @property
     def test_task_status(self) -> tuple:
-        if self.test_task is False or self.test_task is None:
+        if self.test_task is None:
             return ("🕑", f"не здано")
-        #
-        # if self.test_task_passed is False:
-        #     return ("❌", f"не пройшли")
+
+        if self.test_task_passed is False:
+            return ("❌", f"не пройшли")
 
         if self.test_task is True and (self.test_task_passed is False or self.test_task_passed is None):
             return ("📝", f"на перевірці")
