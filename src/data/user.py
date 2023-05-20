@@ -53,13 +53,13 @@ class Team(me.Document):
             return ("🕑", "не здано")
 
         if self.test_task and self.test_task_passed is None:
-            return ("📝", f"на перевірці - <a href='{self.test_task}'>посилання</a>")
+            return ("📝", "на перевірці")
 
         if self.test_task and self.test_task_passed is False:
-            return ("❌", f"не пройшли - <a href='{self.test_task}'>посилання</a>")
+            return ("❌", "не пройшли")
 
         if self.test_task_passed is True:
-            return ("✅", f"здано - <a href='{self.test_task}'>посилання</a>")
+            return ("✅", "здано")
 
         return ("❌", "не здано")
 
