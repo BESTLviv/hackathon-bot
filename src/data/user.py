@@ -52,7 +52,7 @@ class Team(me.Document):
         if self.test_task is False or self.test_task is None:
             return ("🕑", f"не здано")
 
-        if self.test_task is True and self.test_task_passed is False or self.test_task_passed is None:
+        if self.test_task is False and (self.test_task_passed is False or self.test_task_passed is None):
             return ("❌", f"не пройшли")
 
         if self.test_task is True and (self.test_task_passed is None or self.test_task_passed is False):
