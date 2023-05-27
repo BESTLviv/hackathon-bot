@@ -50,7 +50,7 @@ class Data:
 
     @property
     def admin_team(self) -> Team:
-        return Team.objects.filter(name="BEST::Hackath0n").first()
+        return Team.objects.filter(name="Admins").first()
 
     def create_system_tables(self):
         self._create_quizes()
